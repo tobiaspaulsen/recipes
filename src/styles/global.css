@@ -5,8 +5,6 @@
   --line: #e6dccd;
   --accent: #b4502d;
   --pill: rgba(42, 33, 27, 0.07);
-  --glow-1: rgba(180, 80, 45, 0.18);
-  --glow-2: rgba(214, 150, 60, 0.18);
   --glass-fill: linear-gradient(180deg, rgba(255, 252, 247, 0.72), rgba(255, 248, 240, 0.5));
   --glass-border: rgba(255, 255, 255, 0.75);
   --glass-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.9), 0 10px 30px rgba(70, 45, 25, 0.14),
@@ -27,8 +25,6 @@
     --line: #362e27;
     --accent: #e07a52;
     --pill: rgba(255, 240, 225, 0.12);
-    --glow-1: rgba(224, 122, 82, 0.24);
-    --glow-2: rgba(214, 150, 60, 0.15);
     --glass-fill: linear-gradient(180deg, rgba(255, 240, 225, 0.14), rgba(255, 240, 225, 0.05));
     --glass-border: rgba(255, 240, 225, 0.16);
     --glass-shadow: inset 0 1px 0.5px rgba(255, 240, 225, 0.4), inset 0 -1px 1px rgba(255, 240, 225, 0.06),
@@ -58,20 +54,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Gradients, not filter: blur() — the blur delayed first render on iOS by ~10s. */
-.ambient {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle 260px at 70px calc(100% - 180px), var(--glow-1), transparent),
-    radial-gradient(circle 250px at calc(100% - 50px) calc(100% - 290px), var(--glow-2), transparent);
-}
-
 .page {
-  position: relative;
-  z-index: 1;
   max-width: 640px;
   margin: 0 auto;
   padding: calc(env(safe-area-inset-top) + 48px) 24px var(--tabbar-space);
