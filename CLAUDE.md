@@ -8,6 +8,8 @@ Phone-first PWA for household recipes and a shared shopping list. See `PLAN.md` 
 - Don't add files or dependencies before the step that needs them.
 - Propose the next step and wait for a go-ahead before bundling several features together.
 - Prefer getting each step deployed to Vercel and checked on a phone before moving on.
+- Never commit or push without the user's explicit approval for that change. Show what changed and ask first.
+- No emojis in code, docs, commit messages or UI.
 
 ## Comments
 
