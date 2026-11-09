@@ -169,3 +169,11 @@ body {
     transition: none !important;
   }
 }
+
+.noglow .ambient {
+  display: none;
+}
+.noglass .glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
