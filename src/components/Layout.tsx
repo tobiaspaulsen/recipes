@@ -4,11 +4,11 @@ import { LoginForm } from './LoginForm'
 import { TabBar } from './TabBar'
 
 export function Layout() {
-  const { session, loading } = useSession()
+  const { signedIn, loading } = useSession()
 
   if (loading) return null
 
-  if (!session) {
+  if (!signedIn) {
     return (
       <main className="page login-page">
         <h1 className="page-title">Oppskrifter</h1>

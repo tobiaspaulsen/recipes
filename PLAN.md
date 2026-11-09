@@ -115,13 +115,13 @@ Phone-first, but the same app works in a desktop browser (and can be installed a
 - Shopping list stays a single centred column — it's a list either way.
 - Hover states and visible focus rings for mouse/keyboard use.
 
-## Offline (later, its own step)
+## Offline
 
-Currently no service worker — the first attempt made reloads slow and confusing. Add it back deliberately once there's data worth caching, and test updates on a real iPhone.
-
-- Service worker caches the app shell.
-- TanStack Query cache persisted to IndexedDB so recipes and the shopping list are readable offline (e.g. bad reception in the store).
-- Shopping-list edits made offline are queued and synced when back online (v1: optimistic updates + retry; conflicts are rare with two users).
+- Service worker (`public/sw.js`) caches the app shell: the page is fetched network-first with a 3 s timeout, then falls back to the cached copy; hashed assets are cache-first and pruned on each new deploy.
+- The shopping list is kept in `localStorage` so it's readable offline (e.g. bad reception in the store).
+- Shopping-list edits are queued in `localStorage` and sent in order when back online; the list shows the server copy with queued edits on top. Last write wins (conflicts are rare with two users).
+- Offline with an expired login token, the app stays open on the stored login instead of showing the login form.
+- Recipes get the same treatment once they live in Supabase.
 
 ## Build phases
 

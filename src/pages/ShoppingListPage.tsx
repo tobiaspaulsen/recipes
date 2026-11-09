@@ -7,7 +7,7 @@ import { useShoppingList, type ShoppingItem } from '../lib/useShoppingList'
 type Undo = { label: string; items: ShoppingItem[] }
 
 export function ShoppingListPage() {
-  const { items, loading, error, refresh, add, toggle, rename, remove, clearChecked, restore } = useShoppingList()
+  const { items, loading, offline, pendingCount, error, refresh, add, toggle, rename, remove, clearChecked, restore } = useShoppingList()
   const [draft, setDraft] = useState('')
   const [addFocused, setAddFocused] = useState(false)
   const [undo, setUndo] = useState<Undo | null>(null)
@@ -74,6 +74,11 @@ export function ShoppingListPage() {
       </div>
 
       {error && <p className="error">{error}</p>}
+      {offline && (
+        <p className="offline-note">
+          {pendingCount > 0 ? 'Ikke på nett. Endringene sendes når du er tilbake.' : 'Ikke på nett. Viser sist lagrede liste.'}
+        </p>
+      )}
 
       {!loading && items.length === 0 && (
         <div className="empty">

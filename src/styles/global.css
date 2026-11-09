@@ -148,6 +148,10 @@ body {
   color: var(--accent);
   font-size: 14px;
 }
+.offline-note {
+  color: var(--muted);
+  font-size: 14px;
+}
 
 .button-primary,
 .button-secondary {
