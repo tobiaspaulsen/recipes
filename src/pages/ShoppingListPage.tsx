@@ -1,11 +1,12 @@
-import { Check, Plus } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { Check, Plus, Trash2 } from 'lucide-react'
+import { useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useKeyboardInset } from '../lib/useKeyboardInset'
 import { useShoppingList, type ShoppingItem } from '../lib/useShoppingList'
 
 export function ShoppingListPage() {
-  const { items, add, toggle, clearChecked } = useShoppingList()
+  const { items, add, toggle, rename, remove, clearChecked } = useShoppingList()
   const [draft, setDraft] = useState('')
+  const [addFocused, setAddFocused] = useState(false)
   const keyboardInset = useKeyboardInset()
 
   const open = items.filter((item) => !item.checked)
@@ -20,6 +21,8 @@ export function ShoppingListPage() {
     add(name)
     setDraft('')
   }
+
+  const rowProps = { onToggle: toggle, onRename: rename, onRemove: remove }
 
   return (
     <>
@@ -37,7 +40,7 @@ export function ShoppingListPage() {
 
       <ul className="items">
         {open.map((item) => (
-          <ItemRow key={item.id} item={item} onToggle={toggle} />
+          <ItemRow key={item.id} item={item} {...rowProps} />
         ))}
       </ul>
 
@@ -51,7 +54,7 @@ export function ShoppingListPage() {
           </div>
           <ul className="items">
             {done.map((item) => (
-              <ItemRow key={item.id} item={item} onToggle={toggle} />
+              <ItemRow key={item.id} item={item} {...rowProps} />
             ))}
           </ul>
         </section>
@@ -61,7 +64,7 @@ export function ShoppingListPage() {
       <form
         className="add-bar glass"
         onSubmit={submit}
-        style={keyboardInset > 0 ? { bottom: keyboardInset + 8 } : undefined}
+        style={addFocused && keyboardInset > 0 ? { bottom: keyboardInset + 8 } : undefined}
       >
         <label htmlFor="new-item" className="sr-only">
           Ny vare
@@ -70,6 +73,8 @@ export function ShoppingListPage() {
           id="new-item"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
+          onFocus={() => setAddFocused(true)}
+          onBlur={() => setAddFocused(false)}
           placeholder="Legg til vare"
           autoComplete="off"
           enterKeyHint="enter"
@@ -82,15 +87,78 @@ export function ShoppingListPage() {
   )
 }
 
-function ItemRow({ item, onToggle }: { item: ShoppingItem; onToggle: (id: string) => void }) {
+type ItemRowProps = {
+  item: ShoppingItem
+  onToggle: (id: string) => void
+  onRename: (id: string, name: string) => void
+  onRemove: (id: string) => void
+}
+
+function ItemRow({ item, onToggle, onRename, onRemove }: ItemRowProps) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(item.name)
+
+  function startEditing() {
+    setValue(item.name)
+    setEditing(true)
+  }
+
+  function save() {
+    const name = value.trim()
+    if (!name) onRemove(item.id)
+    else if (name !== item.name) onRename(item.id, name)
+    setEditing(false)
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') save()
+    if (event.key === 'Escape') setEditing(false)
+  }
+
   return (
-    <li>
-      <button type="button" className="item" role="checkbox" aria-checked={item.checked} onClick={() => onToggle(item.id)}>
+    <li className="item" data-checked={item.checked}>
+      <button
+        type="button"
+        className="check-button"
+        role="checkbox"
+        aria-checked={item.checked}
+        aria-label={item.name}
+        onClick={() => onToggle(item.id)}
+      >
         <span className="check" aria-hidden="true">
           {item.checked && <Check size={14} strokeWidth={3} />}
         </span>
-        <span className="item-name">{item.name}</span>
       </button>
+
+      {editing ? (
+        <>
+          <input
+            className="item-edit"
+            aria-label={`Endre ${item.name}`}
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            onBlur={save}
+            onKeyDown={onKeyDown}
+            autoFocus
+            autoComplete="off"
+            enterKeyHint="done"
+          />
+          <button
+            type="button"
+            className="delete-button"
+            aria-label={`Slett ${item.name}`}
+            // Keeps the input from blurring (and saving) before the click lands.
+            onPointerDown={(event) => event.preventDefault()}
+            onClick={() => onRemove(item.id)}
+          >
+            <Trash2 size={20} aria-hidden />
+          </button>
+        </>
+      ) : (
+        <button type="button" className="item-name" onClick={startEditing}>
+          {item.name}
+        </button>
+      )}
     </li>
   )
 }

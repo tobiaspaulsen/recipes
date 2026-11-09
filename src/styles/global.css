@@ -179,18 +179,49 @@ body {
 .item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  width: 100%;
+  gap: 4px;
   min-height: 56px;
-  padding: 8px 0;
-  border: 0;
   border-bottom: 1px solid var(--line);
+}
+.check-button,
+.delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.check-button {
+  margin-left: -11px;
+}
+.delete-button {
+  margin-right: -10px;
+  color: var(--muted);
+}
+.item-name,
+.item-edit {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0;
+  border: 0;
   background: transparent;
   color: var(--ink);
   font: inherit;
   font-size: 17px;
   text-align: left;
-  cursor: pointer;
+}
+.item-name {
+  cursor: text;
+}
+.item-edit {
+  outline: none;
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 .check {
   display: flex;
@@ -202,12 +233,12 @@ body {
   border: 1.5px solid var(--ring);
   border-radius: 50%;
 }
-.item[aria-checked='true'] .check {
+.item[data-checked='true'] .check {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
 }
-.item[aria-checked='true'] .item-name {
+.item[data-checked='true'] .item-name {
   color: var(--muted);
   text-decoration: line-through;
 }

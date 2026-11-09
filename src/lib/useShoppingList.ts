@@ -39,7 +39,12 @@ export function useShoppingList() {
       ),
     )
 
+  const rename = (id: string, name: string) =>
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, name } : item)))
+
+  const remove = (id: string) => setItems((prev) => prev.filter((item) => item.id !== id))
+
   const clearChecked = () => setItems((prev) => prev.filter((item) => !item.checked))
 
-  return { items, add, toggle, clearChecked }
+  return { items, add, toggle, rename, remove, clearChecked }
 }
