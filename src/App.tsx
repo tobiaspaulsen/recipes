@@ -1,8 +1,20 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Layout } from './components/Layout'
+import { RecipesPage } from './pages/RecipesPage'
+import { SettingsPage } from './pages/SettingsPage'
+import { ShoppingListPage } from './pages/ShoppingListPage'
+
 export function App() {
   return (
-    <main className="page">
-      <h1 className="page-title">Oppskrifter</h1>
-      <p className="muted">Kommer snart.</p>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<ShoppingListPage />} />
+          <Route path="oppskrifter" element={<RecipesPage />} />
+          <Route path="innstillinger" element={<SettingsPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
