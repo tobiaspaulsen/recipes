@@ -12,8 +12,8 @@
   --glass-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.9), 0 10px 30px rgba(70, 45, 25, 0.14),
     0 1px 3px rgba(70, 45, 25, 0.08);
 
-  --font-serif: 'Newsreader Variable', Georgia, serif;
-  --font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --tabbar-space: calc(120px + env(safe-area-inset-bottom));
 
   color-scheme: light dark;
@@ -58,7 +58,6 @@ body {
   outline-offset: 2px;
 }
 
-/* Glows fade out above the bottom edge; iOS paints flat bg below the viewport. */
 .ambient {
   position: fixed;
   inset: 0;
@@ -75,14 +74,14 @@ body {
 }
 .ambient::before {
   left: -80px;
-  bottom: 190px;
+  bottom: 30px;
   width: 300px;
   height: 300px;
   background: var(--glow-1);
 }
 .ambient::after {
   right: -90px;
-  bottom: 300px;
+  bottom: 150px;
   width: 280px;
   height: 280px;
   background: var(--glow-2);
@@ -119,35 +118,6 @@ body {
 }
 .empty p {
   margin: 0;
-}
-
-.viewport-info {
-  margin-top: 32px;
-  font-size: 14px;
-}
-.viewport-info h2 {
-  margin: 0 0 8px;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.viewport-info dl {
-  margin: 0;
-}
-.viewport-info dl div {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-}
-.viewport-info dt {
-  color: var(--muted);
-}
-.viewport-info dd {
-  margin: 0;
-  font-variant-numeric: tabular-nums;
 }
 
 .glass {
