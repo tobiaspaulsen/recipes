@@ -14,7 +14,7 @@
 
   --font-serif: 'Newsreader', Georgia, serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --tabbar-space: calc(120px + env(safe-area-inset-bottom));
+  --tabbar-space: 120px;
 
   color-scheme: light dark;
 }
@@ -58,9 +58,10 @@ body {
   outline-offset: 2px;
 }
 
+/* Standalone iOS ends the viewport above the home indicator; extend the glows past it. */
 .ambient {
   position: fixed;
-  inset: 0;
+  inset: 0 0 -120px 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
@@ -133,7 +134,7 @@ body {
   z-index: 10;
   left: 16px;
   right: 16px;
-  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  bottom: 12px;
   max-width: 440px;
   margin: 0 auto;
   display: flex;
