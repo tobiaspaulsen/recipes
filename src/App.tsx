@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { RecipePage } from './pages/RecipePage'
 import { RecipesPage } from './pages/RecipesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ShoppingListPage } from './pages/ShoppingListPage'
@@ -11,6 +12,7 @@ export function App() {
         <Route element={<Layout />}>
           <Route index element={<ShoppingListPage />} />
           <Route path="oppskrifter" element={<RecipesPage />} />
+          <Route path="oppskrifter/:id" element={<RecipePage />} />
           <Route path="innstillinger" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
