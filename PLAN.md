@@ -20,7 +20,7 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 
 ## Stack
 
-- **Frontend:** React + Vite + TypeScript, `vite-plugin-pwa` (manifest, icons, service worker), React Router, TanStack Query.
+- **Frontend:** React + Vite + TypeScript, static web app manifest, React Router, `lucide-react` icons, TanStack Query (when data arrives).
 - **Backend:** Supabase (free tier): Postgres, Auth (magic-link email), Realtime (live shopping list), Storage (dish photos), Row Level Security per household.
 - **Server functions:** Vercel serverless functions under `/api` (keeps the Anthropic API key secret, and avoids CORS when fetching recipe sites).
 - **AI:** Claude API (`claude-sonnet-5-5`) with tool use / structured output to return a recipe in our exact schema.
@@ -87,8 +87,8 @@ Scandinavian-minimal, warm. Content looks like Papir (paper, serif headings, hai
 
 **Glass** (navigation layer only — never on list rows or text blocks):
 - Floating bottom tab bar (pill), floating "Legg til vare" input above it, floating action bar on the recipe view, round back/favourite buttons over the photo, servings stepper pill.
-- CSS: translucent gradient fill + `backdrop-filter: blur(22px) saturate(180%)` + 1px light border + inset top highlight + soft drop shadow. Primary actions use a terracotta-tinted glass.
-- Faint terracotta/amber ambient glows behind the list so the glass has colour to pick up.
+- CSS: translucent gradient fill + `backdrop-filter: blur(22px) saturate(180%)` + 1px light border + inset top highlight (no outer drop shadow). Primary actions use a terracotta-tinted glass.
+- No ambient glows (dropped: slow to render on iOS and left seams at the screen edge).
 - Content gets bottom padding so nothing hides under the floating controls; respect iOS safe areas.
 
 **Rules:** one accent colour; no cards-with-shadows, gradients on content, or emoji; tap targets ≥ 44px; ticked items move to a "Handlet" section (undoable) with strike-through.
@@ -117,7 +117,9 @@ Phone-first, but the same app works in a desktop browser (and can be installed a
 - Shopping list stays a single centred column — it's a list either way.
 - Hover states and visible focus rings for mouse/keyboard use.
 
-## Offline
+## Offline (later, its own step)
+
+Currently no service worker — the first attempt made reloads slow and confusing. Add it back deliberately once there's data worth caching, and test updates on a real iPhone.
 
 - Service worker caches the app shell.
 - TanStack Query cache persisted to IndexedDB so recipes and the shopping list are readable offline (e.g. bad reception in the store).
