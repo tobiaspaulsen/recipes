@@ -6,15 +6,25 @@ export type ShoppingItem = {
   name: string
   checked: boolean
   checkedAt: number | null
+  createdAt: string
 }
 
-type Row = { id: string; name: string; checked: boolean; checked_at: string | null }
+type Row = { id: string; name: string; checked: boolean; checked_at: string | null; created_at: string }
 
 const toItem = (row: Row): ShoppingItem => ({
   id: row.id,
   name: row.name,
   checked: row.checked,
   checkedAt: row.checked_at ? Date.parse(row.checked_at) : null,
+  createdAt: row.created_at,
+})
+
+const toRow = (item: ShoppingItem): Row => ({
+  id: item.id,
+  name: item.name,
+  checked: item.checked,
+  checked_at: item.checkedAt ? new Date(item.checkedAt).toISOString() : null,
+  created_at: item.createdAt,
 })
 
 const table = () => supabase.from('shopping_items')
@@ -25,7 +35,7 @@ export function useShoppingList() {
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
-    const { data, error } = await table().select('id, name, checked, checked_at').order('created_at')
+    const { data, error } = await table().select('id, name, checked, checked_at, created_at').order('created_at')
     if (error) setError('Kunne ikke hente listen. Sjekk nettet.')
     else {
       setItems(data.map(toItem))
@@ -62,11 +72,8 @@ export function useShoppingList() {
   }
 
   const add = (name: string) => {
-    const id = crypto.randomUUID()
-    return mutate(
-      (prev) => [...prev, { id, name, checked: false, checkedAt: null }],
-      table().insert({ id, name }),
-    )
+    const item = { id: crypto.randomUUID(), name, checked: false, checkedAt: null, createdAt: new Date().toISOString() }
+    return mutate((prev) => [...prev, item], table().insert(toRow(item)))
   }
 
   const toggle = (id: string) => {
@@ -85,11 +92,23 @@ export function useShoppingList() {
   const rename = (id: string, name: string) =>
     mutate((prev) => prev.map((i) => (i.id === id ? { ...i, name } : i)), table().update({ name }).eq('id', id))
 
-  const remove = (id: string) =>
+  const remove = (id: string) => {
+    const removed = items.filter((i) => i.id === id)
     mutate((prev) => prev.filter((i) => i.id !== id), table().delete().eq('id', id))
+    return removed
+  }
 
-  const clearChecked = () =>
+  const clearChecked = () => {
+    const removed = items.filter((i) => i.checked)
     mutate((prev) => prev.filter((i) => !i.checked), table().delete().eq('checked', true))
+    return removed
+  }
 
-  return { items, loading, error, add, toggle, rename, remove, clearChecked }
+  const restore = (restored: ShoppingItem[]) =>
+    mutate(
+      (prev) => [...prev, ...restored].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+      table().insert(restored.map(toRow)),
+    )
+
+  return { items, loading, error, refresh, add, toggle, rename, remove, clearChecked, restore }
 }

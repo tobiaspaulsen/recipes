@@ -1,13 +1,41 @@
-import { Check, Plus, Trash2 } from 'lucide-react'
-import { useState, type FormEvent, type KeyboardEvent } from 'react'
+import { Check, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useKeyboardInset } from '../lib/useKeyboardInset'
+import { PULL_THRESHOLD, usePullToRefresh } from '../lib/usePullToRefresh'
 import { useShoppingList, type ShoppingItem } from '../lib/useShoppingList'
 
+type Undo = { label: string; items: ShoppingItem[] }
+
 export function ShoppingListPage() {
-  const { items, loading, error, add, toggle, rename, remove, clearChecked } = useShoppingList()
+  const { items, loading, error, refresh, add, toggle, rename, remove, clearChecked, restore } = useShoppingList()
   const [draft, setDraft] = useState('')
   const [addFocused, setAddFocused] = useState(false)
+  const [undo, setUndo] = useState<Undo | null>(null)
   const keyboardInset = useKeyboardInset()
+  const { pull, refreshing } = usePullToRefresh(refresh)
+
+  useEffect(() => {
+    if (!undo) return
+    const timer = setTimeout(() => setUndo(null), 6000)
+    return () => clearTimeout(timer)
+  }, [undo])
+
+  function removeWithUndo(id: string) {
+    const removed = remove(id)
+    if (removed.length) setUndo({ label: `Slettet «${removed[0].name}»`, items: removed })
+  }
+
+  function clearCheckedWithUndo() {
+    const removed = clearChecked()
+    if (removed.length) {
+      setUndo({ label: removed.length === 1 ? 'Fjernet 1 vare' : `Fjernet ${removed.length} varer`, items: removed })
+    }
+  }
+
+  function undoRemoval() {
+    if (undo) restore(undo.items)
+    setUndo(null)
+  }
 
   const open = items.filter((item) => !item.checked)
   const done = items
@@ -22,10 +50,24 @@ export function ShoppingListPage() {
     setDraft('')
   }
 
-  const rowProps = { onToggle: toggle, onRename: rename, onRemove: remove }
+  const rowProps = { onToggle: toggle, onRename: rename, onRemove: removeWithUndo }
 
   return (
     <>
+      {(pull > 0 || refreshing) && (
+        <div
+          className="pull-indicator glass"
+          aria-hidden="true"
+          style={{ opacity: refreshing ? 1 : Math.min(1, pull / PULL_THRESHOLD) }}
+        >
+          <RefreshCw
+            size={18}
+            className={refreshing ? 'spin' : undefined}
+            style={refreshing ? undefined : { transform: `rotate(${pull * 3}deg)` }}
+          />
+        </div>
+      )}
+
       <div className="page-header">
         <h1 className="page-title">Handleliste</h1>
         {open.length > 0 && <span className="muted">{open.length} igjen</span>}
@@ -50,7 +92,7 @@ export function ShoppingListPage() {
         <section>
           <div className="done-header">
             <h2>Handlet ({done.length})</h2>
-            <button type="button" className="text-button" onClick={clearChecked}>
+            <button type="button" className="text-button" onClick={clearCheckedWithUndo}>
               Fjern handlet
             </button>
           </div>
@@ -60,6 +102,15 @@ export function ShoppingListPage() {
             ))}
           </ul>
         </section>
+      )}
+
+      {undo && (
+        <div className="toast glass" role="status">
+          <span>{undo.label}</span>
+          <button type="button" className="text-button" onClick={undoRemoval}>
+            Angre
+          </button>
+        </div>
       )}
 
       <div className="add-bar-space" />
