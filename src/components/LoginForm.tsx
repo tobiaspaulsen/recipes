@@ -3,74 +3,46 @@ import { supabase } from '../lib/supabase'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function sendCode(event: FormEvent) {
+  async function logIn(event: FormEvent) {
     event.preventDefault()
     setBusy(true)
     setError(null)
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim() })
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     setBusy(false)
-    if (error) setError(error.message)
-    else setSent(true)
-  }
-
-  async function verify(event: FormEvent) {
-    event.preventDefault()
-    setBusy(true)
-    setError(null)
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' })
-    setBusy(false)
-    if (error) setError('Feil eller utløpt kode. Prøv igjen.')
-  }
-
-  if (!sent) {
-    return (
-      <form className="form" onSubmit={sendCode}>
-        <p className="muted">Logg inn med e-post. Du får en kode tilsendt.</p>
-        <div className="field">
-          <label htmlFor="email">E-post</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            autoComplete="email"
-            required
-          />
-        </div>
-        {error && <p className="error">{error}</p>}
-        <button type="submit" className="button-primary" disabled={busy || !email.trim()}>
-          {busy ? 'Sender…' : 'Send kode'}
-        </button>
-      </form>
-    )
+    if (error) setError('Feil e-post eller passord.')
   }
 
   return (
-    <form className="form" onSubmit={verify}>
-      <p className="muted">Vi har sendt en kode til {email}. Skriv den inn her.</p>
+    <form className="form" onSubmit={logIn}>
       <div className="field">
-        <label htmlFor="code">Kode</label>
+        <label htmlFor="email">E-post</label>
         <input
-          id="code"
-          value={code}
-          onChange={(event) => setCode(event.target.value)}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={10}
+          id="email"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          autoComplete="username"
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="password">Passord</label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          autoComplete="current-password"
           required
         />
       </div>
       {error && <p className="error">{error}</p>}
-      <button type="submit" className="button-primary" disabled={busy || !code.trim()}>
+      <button type="submit" className="button-primary" disabled={busy || !email.trim() || !password}>
         {busy ? 'Logger inn…' : 'Logg inn'}
-      </button>
-      <button type="button" className="text-button" onClick={() => setSent(false)}>
-        Bruk en annen e-post
       </button>
     </form>
   )

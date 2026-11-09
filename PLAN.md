@@ -21,21 +21,19 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 ## Stack
 
 - **Frontend:** React + Vite + TypeScript, static web app manifest, React Router, `lucide-react` icons, TanStack Query (when data arrives).
-- **Backend:** Supabase (free tier): Postgres, Auth (magic-link email), Realtime (live shopping list), Storage (dish photos), Row Level Security per household.
+- **Backend:** Supabase (free tier): Postgres, Auth (email + password), Realtime (live shopping list), Storage (dish photos), Row Level Security.
 - **Server functions:** Vercel serverless functions under `/api` (keeps the Anthropic API key secret, and avoids CORS when fetching recipe sites).
 - **AI:** Claude API (`claude-sonnet-5-5`) with tool use / structured output to return a recipe in our exact schema.
 - **Hosting:** Vercel (free), same project as the API functions.
 
 ## Data model (Supabase)
 
-- `households` — id, name
-- `household_members` — household_id, user_id (invite partner by email/link)
-- `recipes` — id, household_id, title, language (`no`/`en`), servings (base), source_url, image_path, tags `text[]`, notes, prep/cook time, created_at, updated_at
+- `recipes` — id, title, language (`no`/`en`), servings (base), source_url, image_path, tags `text[]`, notes, prep/cook time, created_at, updated_at
 - `ingredients` — id, recipe_id, position, section (optional heading, e.g. "Saus"), quantity `numeric null`, unit `text null`, name (in the recipe's original language, e.g. "onions"), note ("sliced", "finhakket"), scalable `bool` (false for "salt etter smak")
 - `steps` — id, recipe_id, position, text
-- `shopping_items` — id, household_id, name, quantity `numeric null`, unit `text null`, recipe_id `null` (where it came from), checked, created_at, checked_at
+- `shopping_items` — id, name, quantity `numeric null`, unit `text null`, recipe_id `null` (where it came from), checked, created_at, checked_at
 
-All tables protected by RLS: a user can only read/write rows for households they belong to.
+**Accounts (decided 2026-11-09):** no households or invites. Users are created by hand in the Supabase dashboard (Auto Confirm on), sign-ups are disabled, and credentials are shared privately. Every logged-in user shares all data; RLS allows `authenticated` only. No emails are sent, so no SMTP is needed.
 
 ## Core logic
 
@@ -101,7 +99,7 @@ Scandinavian-minimal, warm. Content looks like Papir (paper, serif headings, hai
 4. **Cooking mode** — large text, one step at a time or tick-off list, screen kept awake via the Wake Lock API, ingredient amounts at current servings.
 5. **Recipe editor** — title, servings, tags, photo upload, ingredient rows (amount / unit picker / name / note), steps, reorder.
 6. **Ny oppskrift** — choose: type manually / paste link / paste text / take or pick photo.
-7. **Innstillinger** — household, invite partner, sign out.
+7. **Innstillinger** — log in (email + password), log out.
 
 Floating glass tab bar: Handleliste (default) · Oppskrifter · Innstillinger.
 
@@ -129,7 +127,7 @@ Currently no service worker — the first attempt made reloads slow and confusin
 
 **Priority (decided 2026-11-09): a fully working shopping list first, recipe integration later.** The recipe screens stay as they are (example data, scaling) until the list app is complete and shared between phones. The phases below are the original order; the list work now comes first.
 
-1. **Foundation** — Vite/React/TS project, PWA manifest + icons, Supabase project, schema + RLS, magic-link login, household + invite, deploy to Vercel. Verify it installs on iPhone.
+1. **Foundation** — Vite/React/TS project, PWA manifest + icons, Supabase project, schema + RLS, email + password login, deploy to Vercel. Verify it installs on iPhone.
 2. **Recipes** — CRUD editor, recipe view, scaling + unit display, photos, tags + search.
 3. **Shopping list** — list screen, quick-add, add-from-recipe with merging, realtime sync, offline cache.
 4. **Import** — URL import (JSON-LD + Claude), paste text, photo parsing, unit conversion on import.
@@ -140,14 +138,14 @@ Currently no service worker — the first attempt made reloads slow and confusin
 
 - Unit tests (Vitest) for `units.ts`, `scale.ts`, `shopping.ts` merge logic — the parts most likely to have subtle bugs (rounding, fractions, unit promotion, merging).
 - Import tested against a handful of real sites (Norwegian: matprat.no, tine.no; English: e.g. BBC Good Food, NYT Cooking) and a photo of a cookbook page.
-- Manual end-to-end on two iPhones: install to home screen, log in as two users in one household, add recipe → scale → add to list on phone A, see it appear on phone B, tick off offline and confirm sync on reconnect.
+- Manual end-to-end on two iPhones: install to home screen, log in as two users, add recipe → scale → add to list on phone A, see it appear on phone B, tick off offline and confirm sync on reconnect.
 - Cooking mode: confirm screen stays on in installed PWA on iOS.
 
 ## Secrets
 
 | Value | Secret? | Lives in |
 |---|---|---|
-| Supabase URL + anon key | No — public by design, shipped to the browser; protection comes from RLS | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
+| Supabase URL + publishable key | No — public by design, committed in `.env`; protection comes from RLS + disabled sign-ups | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` |
 | Anthropic API key | **Yes** | `ANTHROPIC_API_KEY` — server functions only |
 | Supabase service-role key | **Yes** (bypasses RLS) | Not used in v1; if ever needed, server only |
 
