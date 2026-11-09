@@ -121,6 +121,35 @@ body {
   margin: 0;
 }
 
+.viewport-info {
+  margin-top: 32px;
+  font-size: 14px;
+}
+.viewport-info h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.viewport-info dl {
+  margin: 0;
+}
+.viewport-info dl div {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.viewport-info dt {
+  color: var(--muted);
+}
+.viewport-info dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .glass {
   background: var(--glass-fill);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
