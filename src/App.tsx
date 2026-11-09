@@ -1,22 +1,23 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { RecipePage } from './pages/RecipePage'
 import { RecipesPage } from './pages/RecipesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ShoppingListPage } from './pages/ShoppingListPage'
 
+const router = createBrowserRouter([
+  {
+    element: <Layout />,
+    children: [
+      { index: true, element: <ShoppingListPage /> },
+      { path: 'oppskrifter', element: <RecipesPage /> },
+      { path: 'oppskrifter/:id', element: <RecipePage /> },
+      { path: 'innstillinger', element: <SettingsPage /> },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ],
+  },
+])
+
 export function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<ShoppingListPage />} />
-          <Route path="oppskrifter" element={<RecipesPage />} />
-          <Route path="oppskrifter/:id" element={<RecipePage />} />
-          <Route path="innstillinger" element={<SettingsPage />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-  )
+  return <RouterProvider router={router} />
 }
