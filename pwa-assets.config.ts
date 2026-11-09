@@ -2,8 +2,7 @@ import { defineConfig, minimal2023Preset } from '@vite-pwa/assets-generator/conf
 
 const terracotta = '#B4502D'
 
-// The preset's defaults pad the apple and maskable icons on white, which shows as a white
-// frame on the iOS home screen. The logo is already full-bleed, so fill with its own colour.
+// Preset default pads on white, which shows as a white frame on iOS.
 export default defineConfig({
   preset: {
     ...minimal2023Preset,
