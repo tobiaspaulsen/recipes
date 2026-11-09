@@ -8,9 +8,9 @@ export function useKeyboardInset() {
   useEffect(() => {
     const viewport = window.visualViewport
     if (!viewport) return
-    // Scrolling and toolbar collapse also shift the viewport a little; only a keyboard hides this much.
+    // Scrolling shifts the viewport a little and overscroll makes offsetTop negative; only a keyboard hides this much.
     const update = () => {
-      const hidden = window.innerHeight - viewport.height - viewport.offsetTop
+      const hidden = window.innerHeight - viewport.height - Math.max(0, viewport.offsetTop)
       setInset(hidden > 150 ? hidden : 0)
     }
     viewport.addEventListener('resize', update)
