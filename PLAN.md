@@ -127,6 +127,8 @@ Currently no service worker — the first attempt made reloads slow and confusin
 
 ## Build phases
 
+**Priority (decided 2026-11-09): a fully working shopping list first, recipe integration later.** The recipe screens stay as they are (example data, scaling) until the list app is complete and shared between phones. The phases below are the original order; the list work now comes first.
+
 1. **Foundation** — Vite/React/TS project, PWA manifest + icons, Supabase project, schema + RLS, magic-link login, household + invite, deploy to Vercel. Verify it installs on iPhone.
 2. **Recipes** — CRUD editor, recipe view, scaling + unit display, photos, tags + search.
 3. **Shopping list** — list screen, quick-add, add-from-recipe with merging, realtime sync, offline cache.
