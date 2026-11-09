@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Offline caching comes in a later step; this unregisters the worker already on phones.
+      selfDestroying: true,
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.svg'],
       manifest: {
