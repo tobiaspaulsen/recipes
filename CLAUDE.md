@@ -21,6 +21,11 @@ Phone-first PWA for household recipes and a shared shopping list. See `PLAN.md` 
 - No `apple-mobile-web-app-status-bar-style: black-translucent`: on iOS 26 the home screen app launches one status bar too short.
 - Test layout changes on a real iPhone, both in Safari and as a home screen app.
 
+## Database
+
+- Migrations live in `supabase/migrations/` named `YYYYMMDDHHMMSS_description.sql` (Supabase CLI format).
+- They're run by hand in the Supabase SQL Editor; don't push app code that needs a migration before it has been run.
+
 ## Commands
 
 - `npm run dev` — local dev server

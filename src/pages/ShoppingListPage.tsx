@@ -4,7 +4,7 @@ import { useKeyboardInset } from '../lib/useKeyboardInset'
 import { useShoppingList, type ShoppingItem } from '../lib/useShoppingList'
 
 export function ShoppingListPage() {
-  const { items, add, toggle, rename, remove, clearChecked } = useShoppingList()
+  const { items, loading, error, add, toggle, rename, remove, clearChecked } = useShoppingList()
   const [draft, setDraft] = useState('')
   const [addFocused, setAddFocused] = useState(false)
   const keyboardInset = useKeyboardInset()
@@ -31,7 +31,9 @@ export function ShoppingListPage() {
         {open.length > 0 && <span className="muted">{open.length} igjen</span>}
       </div>
 
-      {items.length === 0 && (
+      {error && <p className="error">{error}</p>}
+
+      {!loading && items.length === 0 && (
         <div className="empty">
           <h2>Ingenting på listen</h2>
           <p>Skriv inn det du trenger nederst.</p>
