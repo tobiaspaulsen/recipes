@@ -14,7 +14,7 @@
 
   --font-serif: 'Newsreader', Georgia, serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --tabbar-space: 120px;
+  --tabbar-space: calc(120px + env(safe-area-inset-bottom));
 
   color-scheme: light dark;
 }
@@ -163,7 +163,7 @@ body {
   z-index: 10;
   left: 16px;
   right: 16px;
-  bottom: 12px;
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
   max-width: 440px;
   margin: 0 auto;
   display: flex;
