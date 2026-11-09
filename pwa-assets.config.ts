@@ -2,10 +2,11 @@ import { defineConfig, minimal2023Preset } from '@vite-pwa/assets-generator/conf
 
 const terracotta = '#B4502D'
 
-// Preset default pads on white, which shows as a white frame on iOS.
+// Preset default pads with white/transparent, which iOS shows as a white frame.
 export default defineConfig({
   preset: {
     ...minimal2023Preset,
+    transparent: { ...minimal2023Preset.transparent, padding: 0 },
     apple: { sizes: [180], padding: 0, resizeOptions: { background: terracotta } },
     maskable: { sizes: [512], padding: 0.3, resizeOptions: { background: terracotta } },
   },
