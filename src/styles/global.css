@@ -102,6 +102,14 @@ body {
   white-space: nowrap;
 }
 
+.login-page {
+  max-width: 420px;
+  padding-top: 96px;
+}
+.login-page .form {
+  margin-top: 32px;
+}
+
 .form {
   display: flex;
   flex-direction: column;
