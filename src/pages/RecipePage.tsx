@@ -1,4 +1,4 @@
-import { ChevronLeft, Minus, Plus } from 'lucide-react'
+import { ChevronLeft, CookingPot, Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { recipes } from '../data/recipes'
@@ -18,7 +18,9 @@ export function RecipePage() {
         Oppskrifter
       </Link>
 
-      <div className="photo-placeholder">Foto av retten</div>
+      <div className="photo-fallback recipe-photo" aria-hidden="true">
+        <CookingPot size={44} strokeWidth={1.5} />
+      </div>
 
       <p className="recipe-meta">{[`${recipe.minutes} min`, ...recipe.tags].join(' · ')}</p>
       <h1 className="page-title">{recipe.title}</h1>

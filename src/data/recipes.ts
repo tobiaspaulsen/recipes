@@ -41,4 +41,26 @@ export const recipes: Recipe[] = [
       'Stir in garam masala and season with salt. Serve with rice.',
     ],
   },
+  {
+    id: 'tacokveld',
+    title: 'Tacokveld',
+    servings: 4,
+    minutes: 25,
+    tags: ['Kjøttdeig', 'Fredag'],
+    ingredients: [
+      { quantity: 400, unit: 'g', name: 'kjøttdeig' },
+      { quantity: 1, unit: 'pakke', name: 'tacokrydder' },
+      { quantity: 1, unit: 'pakke', name: 'tortillalefser' },
+      { quantity: 1, unit: 'beger', name: 'rømme' },
+      { quantity: 2, unit: 'stk', name: 'tomater' },
+      { quantity: 1, unit: 'stk', name: 'agurk' },
+      { quantity: 150, unit: 'g', name: 'revet ost' },
+    ],
+    steps: [
+      'Brun kjøttdeigen i en stekepanne.',
+      'Tilsett tacokrydder og vann etter anvisning på pakken. La småkoke i 5 minutter.',
+      'Kutt tomater og agurk i terninger.',
+      'Varm lefsene og server med kjøttdeig, grønnsaker, ost og rømme.',
+    ],
+  },
 ]
