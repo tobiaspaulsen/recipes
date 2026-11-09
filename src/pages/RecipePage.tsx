@@ -13,13 +13,12 @@ export function RecipePage() {
 
   return (
     <article>
-      <Link to="/oppskrifter" className="back-link">
-        <ChevronLeft size={20} aria-hidden />
-        Oppskrifter
+      <Link to="/oppskrifter" className="float-button glass" aria-label="Tilbake til oppskrifter">
+        <ChevronLeft size={22} aria-hidden />
       </Link>
 
       <div className="photo-fallback recipe-photo" aria-hidden="true">
-        <CookingPot size={44} strokeWidth={1.5} />
+        <CookingPot size={48} strokeWidth={1.5} />
       </div>
 
       <p className="recipe-meta">{[`${recipe.minutes} min`, ...recipe.tags].join(' · ')}</p>
@@ -73,6 +72,16 @@ export function RecipePage() {
           </li>
         ))}
       </ol>
+
+      <div className="add-bar-space" />
+      <div className="action-bar glass">
+        <button type="button" className="primary" disabled>
+          Legg i handleliste
+        </button>
+        <button type="button" disabled>
+          Start matlaging
+        </button>
+      </div>
     </article>
   )
 }

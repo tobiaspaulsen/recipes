@@ -1,10 +1,12 @@
 import { Check, Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { useKeyboardInset } from '../lib/useKeyboardInset'
 import { useShoppingList, type ShoppingItem } from '../lib/useShoppingList'
 
 export function ShoppingListPage() {
   const { items, add, toggle, clearChecked } = useShoppingList()
   const [draft, setDraft] = useState('')
+  const keyboardInset = useKeyboardInset()
 
   const open = items.filter((item) => !item.checked)
   const done = items
@@ -26,27 +28,10 @@ export function ShoppingListPage() {
         {open.length > 0 && <span className="muted">{open.length} igjen</span>}
       </div>
 
-      <form className="add-item" onSubmit={submit}>
-        <label htmlFor="new-item" className="sr-only">
-          Ny vare
-        </label>
-        <input
-          id="new-item"
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="Legg til vare"
-          autoComplete="off"
-          enterKeyHint="enter"
-        />
-        <button type="submit" aria-label="Legg til" disabled={!draft.trim()}>
-          <Plus size={22} aria-hidden />
-        </button>
-      </form>
-
       {items.length === 0 && (
         <div className="empty">
           <h2>Ingenting på listen</h2>
-          <p>Skriv inn det du trenger over.</p>
+          <p>Skriv inn det du trenger nederst.</p>
         </div>
       )}
 
@@ -71,6 +56,28 @@ export function ShoppingListPage() {
           </ul>
         </section>
       )}
+
+      <div className="add-bar-space" />
+      <form
+        className="add-bar glass"
+        onSubmit={submit}
+        style={keyboardInset > 0 ? { bottom: keyboardInset + 8 } : undefined}
+      >
+        <label htmlFor="new-item" className="sr-only">
+          Ny vare
+        </label>
+        <input
+          id="new-item"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="Legg til vare"
+          autoComplete="off"
+          enterKeyHint="enter"
+        />
+        <button type="submit" aria-label="Legg til" disabled={!draft.trim()}>
+          <Plus size={20} strokeWidth={2.25} aria-hidden />
+        </button>
+      </form>
     </>
   )
 }
