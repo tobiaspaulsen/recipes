@@ -264,6 +264,13 @@ body {
   padding: 0 20px;
   border-radius: 999px;
   font-size: 15px;
+  animation: toast-in 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 .toast .text-button {
   font-size: 15px;
@@ -359,6 +366,24 @@ body {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
+}
+.item[data-pop][data-checked='true'] .check {
+  animation: check-fill 200ms ease-out;
+}
+.item[data-pop][data-checked='true'] .check svg {
+  animation: check-pop 280ms cubic-bezier(0.3, 0, 0.2, 1.5);
+}
+@keyframes check-fill {
+  from {
+    border-color: var(--ring);
+    background: transparent;
+  }
+}
+@keyframes check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
 }
 .item[data-checked='true'] .item-name {
   color: var(--muted);
@@ -603,5 +628,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+  .check,
+  .check svg,
+  .toast {
+    animation: none !important;
   }
 }

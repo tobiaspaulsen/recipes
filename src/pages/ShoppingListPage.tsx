@@ -1,5 +1,6 @@
 import { Check, Plus, RefreshCw, Trash2 } from 'lucide-react'
-import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { fadeOut, useFlip } from '../lib/motion'
 import { useKeyboardInset } from '../lib/useKeyboardInset'
 import { PULL_THRESHOLD, usePullToRefresh } from '../lib/usePullToRefresh'
 import { useShoppingList, type ShoppingItem } from '../lib/useShoppingList'
@@ -13,6 +14,17 @@ export function ShoppingListPage() {
   const [undo, setUndo] = useState<Undo | null>(null)
   const keyboardInset = useKeyboardInset()
   const { pull, refreshing } = usePullToRefresh(refresh)
+  const listRef = useRef<HTMLDivElement>(null)
+  const doneRef = useRef<HTMLElement>(null)
+  const clearing = useRef(false)
+  // Stays false through the first loaded render, so the initial list doesn't animate in.
+  const settled = useRef(false)
+
+  useEffect(() => {
+    if (!loading) settled.current = true
+  }, [loading])
+
+  useFlip(listRef, settled.current)
 
   useEffect(() => {
     if (!undo) return
@@ -25,7 +37,11 @@ export function ShoppingListPage() {
     if (removed.length) setUndo({ label: `Slettet «${removed[0].name}»`, items: removed })
   }
 
-  function clearCheckedWithUndo() {
+  async function clearCheckedWithUndo() {
+    if (clearing.current) return
+    clearing.current = true
+    await fadeOut(doneRef.current)
+    clearing.current = false
     const removed = clearChecked()
     if (removed.length) {
       setUndo({ label: removed.length === 1 ? 'Fjernet 1 vare' : `Fjernet ${removed.length} varer`, items: removed })
@@ -50,7 +66,7 @@ export function ShoppingListPage() {
     setDraft('')
   }
 
-  const rowProps = { onToggle: toggle, onRename: rename, onRemove: removeWithUndo }
+  const rowProps = { onToggle: toggle, onRename: rename, onRemove: removeWithUndo, animate: settled.current }
 
   return (
     <>
@@ -87,27 +103,29 @@ export function ShoppingListPage() {
         </div>
       )}
 
-      <ul className="items">
-        {open.map((item) => (
-          <ItemRow key={item.id} item={item} {...rowProps} />
-        ))}
-      </ul>
+      <div ref={listRef}>
+        <ul className="items">
+          {open.map((item) => (
+            <ItemRow key={item.id} item={item} {...rowProps} />
+          ))}
+        </ul>
 
-      {done.length > 0 && (
-        <section>
-          <div className="done-header">
-            <h2>Handlet ({done.length})</h2>
-            <button type="button" className="text-button" onClick={clearCheckedWithUndo}>
-              Fjern handlet
-            </button>
-          </div>
-          <ul className="items">
-            {done.map((item) => (
-              <ItemRow key={item.id} item={item} {...rowProps} />
-            ))}
-          </ul>
-        </section>
-      )}
+        {done.length > 0 && (
+          <section ref={doneRef}>
+            <div className="done-header" data-flip-id="done-header">
+              <h2>Handlet ({done.length})</h2>
+              <button type="button" className="text-button" onClick={clearCheckedWithUndo}>
+                Fjern handlet
+              </button>
+            </div>
+            <ul className="items">
+              {done.map((item) => (
+                <ItemRow key={item.id} item={item} {...rowProps} />
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
 
       {undo && (
         <div className="toast glass" role="status">
@@ -150,11 +168,20 @@ type ItemRowProps = {
   onToggle: (id: string) => void
   onRename: (id: string, name: string) => void
   onRemove: (id: string) => void
+  animate: boolean
 }
 
-function ItemRow({ item, onToggle, onRename, onRemove }: ItemRowProps) {
+function ItemRow({ item, onToggle, onRename, onRemove, animate }: ItemRowProps) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(item.name)
+  // Toggling moves the row to the other list, so it mounts fresh; only rows mounted after load pop their check.
+  const [pop] = useState(animate)
+  const rowRef = useRef<HTMLLIElement>(null)
+
+  async function removeAnimated() {
+    await fadeOut(rowRef.current)
+    onRemove(item.id)
+  }
 
   function startEditing() {
     setValue(item.name)
@@ -163,7 +190,7 @@ function ItemRow({ item, onToggle, onRename, onRemove }: ItemRowProps) {
 
   function save() {
     const name = value.trim()
-    if (!name) onRemove(item.id)
+    if (!name) removeAnimated()
     else if (name !== item.name) onRename(item.id, name)
     setEditing(false)
   }
@@ -174,7 +201,7 @@ function ItemRow({ item, onToggle, onRename, onRemove }: ItemRowProps) {
   }
 
   return (
-    <li className="item" data-checked={item.checked}>
+    <li ref={rowRef} className="item" data-checked={item.checked} data-pop={pop || undefined} data-flip-id={item.id}>
       <button
         type="button"
         className="check-button"
@@ -207,7 +234,7 @@ function ItemRow({ item, onToggle, onRename, onRemove }: ItemRowProps) {
             aria-label={`Slett ${item.name}`}
             // Keeps the input from blurring (and saving) before the click lands.
             onPointerDown={(event) => event.preventDefault()}
-            onClick={() => onRemove(item.id)}
+            onClick={removeAnimated}
           >
             <Trash2 size={20} aria-hidden />
           </button>
