@@ -3,7 +3,7 @@
   --ink: #2a211b;
   --muted: #6f6255;
   --line: #e6dccd;
-  --accent: #b4502d;
+  --accent: #6b2e4a;
   --on-accent: #fff8f0;
   --ring: #a39482;
   --pill: rgba(42, 33, 27, 0.07);
@@ -18,7 +18,7 @@
   /* Overlaps the home-indicator area like iOS 26's own floating tab bars. */
   --tabbar-bottom: max(12px, calc(env(safe-area-inset-bottom) - 12px));
   --tabbar-space: calc(100px + env(safe-area-inset-bottom));
-  --tint-fill: linear-gradient(180deg, rgba(196, 96, 58, 0.96), rgba(172, 74, 40, 0.94));
+  --tint-fill: linear-gradient(180deg, rgba(123, 62, 90, 0.96), rgba(107, 46, 74, 0.94));
 
   color-scheme: light dark;
 }
@@ -29,10 +29,10 @@
     --ink: #f2e9dd;
     --muted: #b3a594;
     --line: #362e27;
-    --accent: #e07a52;
-    --on-accent: #1e1915;
+    --accent: #b86e94;
+    --on-accent: #f2e9dd;
     --ring: #7d6f61;
-    --tint-fill: linear-gradient(180deg, rgba(236, 140, 100, 0.96), rgba(220, 114, 74, 0.94));
+    --tint-fill: linear-gradient(180deg, rgba(158, 82, 121, 0.96), rgba(142, 70, 107, 0.94));
     --pill: rgba(255, 240, 225, 0.12);
     --glass-fill: linear-gradient(180deg, rgba(255, 240, 225, 0.05), rgba(255, 240, 225, 0));
     --glass-border: rgba(255, 240, 225, 0.16);
@@ -264,6 +264,13 @@ body {
   padding: 0 20px;
   border-radius: 999px;
   font-size: 15px;
+  animation: toast-in 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 .toast .text-button {
   font-size: 15px;
@@ -359,6 +366,24 @@ body {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
+}
+.item[data-pop][data-checked='true'] .check {
+  animation: check-fill 200ms ease-out;
+}
+.item[data-pop][data-checked='true'] .check svg {
+  animation: check-pop 280ms cubic-bezier(0.3, 0, 0.2, 1.5);
+}
+@keyframes check-fill {
+  from {
+    border-color: var(--ring);
+    background: transparent;
+  }
+}
+@keyframes check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
 }
 .item[data-checked='true'] .item-name {
   color: var(--muted);
@@ -603,5 +628,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+  .check,
+  .check svg,
+  .toast {
+    animation: none !important;
   }
 }

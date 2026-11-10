@@ -78,14 +78,15 @@ Scandinavian-minimal, warm. Content looks like Papir (paper, serif headings, hai
 | `muted` | `#6F6255` | `#B3A594` |
 | `line` (hairlines) | `#E6DCCD` | `#362E27` |
 | `ring` (unchecked box) | `#A39482` | `#7D6F61` |
-| `accent` (terracotta) | `#B4502D` | `#E07A52` |
-| `on-accent` | `#FFF8F0` | `#1E1915` |
+| `accent` (aubergine) | `#6B2E4A` | `#B86E94` |
+| `on-accent` | `#FFF8F0` | `#F2E9DD` |
+| `tint-fill` (filled buttons) | `#6B2E4A` | `#8E466B` |
 
 **Type:** Newsreader (500) for headings and step numbers; Inter for UI and body; tabular figures for amounts.
 
 **Glass** (navigation layer only — never on list rows or text blocks):
 - Floating bottom tab bar (pill), floating "Legg til vare" input above it, floating action bar on the recipe view, round back/favourite buttons over the photo, servings stepper pill.
-- CSS: translucent gradient fill + `backdrop-filter: blur(22px) saturate(180%)` + 1px light border + inset top highlight (no outer drop shadow). Primary actions use a terracotta-tinted glass.
+- CSS: translucent gradient fill + `backdrop-filter: blur(22px) saturate(180%)` + 1px light border + inset top highlight (no outer drop shadow). Primary actions use an aubergine-tinted glass.
 - No ambient glows (dropped: slow to render on iOS and left seams at the screen edge).
 - Content gets bottom padding so nothing hides under the floating controls; respect iOS safe areas.
 
