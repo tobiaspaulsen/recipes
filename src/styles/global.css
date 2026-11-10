@@ -5,7 +5,7 @@
   --line: #e6dccd;
   --accent: #6b2e4a;
   --on-accent: #fff8f0;
-  --ring: #a39482;
+  --ring: #968774;
   --pill: rgba(42, 33, 27, 0.07);
   --glass-fill: linear-gradient(180deg, rgba(255, 252, 247, 0.22), rgba(255, 248, 240, 0.08));
   --glass-border: rgba(255, 255, 255, 0.75);
@@ -32,7 +32,7 @@
     --accent: #b86e94;
     --on-accent: #f2e9dd;
     --ring: #7d6f61;
-    --tint-fill: linear-gradient(180deg, rgba(158, 82, 121, 0.96), rgba(142, 70, 107, 0.94));
+    --tint-fill: linear-gradient(180deg, rgba(152, 80, 117, 0.96), rgba(142, 70, 107, 0.94));
     --pill: rgba(255, 240, 225, 0.12);
     --glass-fill: linear-gradient(180deg, rgba(255, 240, 225, 0.05), rgba(255, 240, 225, 0));
     --glass-border: rgba(255, 240, 225, 0.16);

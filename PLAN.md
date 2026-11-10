@@ -77,7 +77,7 @@ Scandinavian-minimal, warm. Content looks like Papir (paper, serif headings, hai
 | `ink` | `#2A211B` | `#F2E9DD` |
 | `muted` | `#6F6255` | `#B3A594` |
 | `line` (hairlines) | `#E6DCCD` | `#362E27` |
-| `ring` (unchecked box) | `#A39482` | `#7D6F61` |
+| `ring` (unchecked box) | `#968774` | `#7D6F61` |
 | `accent` (aubergine) | `#6B2E4A` | `#B86E94` |
 | `on-accent` | `#FFF8F0` | `#F2E9DD` |
 | `tint-fill` (filled buttons) | `#6B2E4A` | `#8E466B` |
