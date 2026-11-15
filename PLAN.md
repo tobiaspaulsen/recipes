@@ -10,7 +10,7 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 |---|---|
 | Platform | PWA, phone-first, installed to home screen |
 | Users | Household (2+ people) sharing recipes and a shopping list, synced live |
-| Shopping list | Inside the app, synced via backend. Recipe items + free-form items ("toalettpapir") |
+| Shopping list | Inside the app, synced via backend. Plain-text items ("toalettpapir", "2 l melk"), typed or added from a recipe |
 | List sorting | Order added (unchecked on top, checked at the bottom) |
 | Adding recipes | Manual form, import from URL, paste text / photo parsed by AI |
 | Language | UI in Norwegian. Recipe text stays in its original language (e.g. English) |
@@ -31,7 +31,7 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 - `recipes` — id, title, language (`no`/`en`), servings (base), source_url, image_path, tags `text[]`, notes, prep/cook time, created_at, updated_at
 - `ingredients` — id, recipe_id, position, section (optional heading, e.g. "Saus"), quantity `numeric null`, unit `text null`, name (in the recipe's original language, e.g. "onions"), note ("sliced", "finhakket"), scalable `bool` (false for "salt etter smak")
 - `steps` — id, recipe_id, position, text
-- `shopping_items` — id, name, quantity `numeric null`, unit `text null`, recipe_id `null` (where it came from), checked, created_at, checked_at
+- `shopping_items` — id, name (free text, amount included), recipe_id `null` (where it came from; column added with add-from-recipe), checked, created_at, checked_at
 
 **Accounts (decided 2026-11-09):** no households or invites. Users are created by hand in the Supabase dashboard (Auto Confirm on), sign-ups are disabled, and credentials are shared privately. Every logged-in user shares all data; RLS allows `authenticated` only. No emails are sent, so no SMTP is needed.
 
@@ -47,11 +47,11 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 - Smart rounding: whole items (`stk`, `fedd`, `boks`) round to nearest 0.5/1; small spoon amounts shown as fractions (½, ¼); large amounts promote units (1000 g → 1 kg, 10 dl → 1 l, 15 ml ↔ 1 ss where sensible).
 - Display with Norwegian number formatting (comma decimal).
 
-### Shopping list merging (`src/lib/shopping.ts`)
-- Shopping items keep the ingredient's original-language `name` (no translation — nothing gets lost). Prep notes stay on the recipe, not the list.
-- When adding a recipe's ingredients (at the chosen servings), merge into an existing **unchecked** item with the same normalized name + compatible unit (300 g + 200 g pasta → 500 g). Otherwise insert a new row.
+### Shopping list
+- Items are plain text, amounts included ("2 l melk"). No quantity or unit fields (decided 2026-11-15).
+- Adding a recipe's ingredients (at the chosen servings) inserts one text row per ingredient: the scaled amount + unit + original-language name ("300 g pasta"). Prep notes stay on the recipe, not the list. No automatic merging; duplicates are edited by hand.
 - User can deselect ingredients before adding ("we already have salt").
-- Free-form items: quick-add input at the top of the list, optional quantity.
+- Free-form items: quick-add input at the top of the list.
 - Actions: tick off, edit, delete, "clear checked".
 - Realtime subscription so both phones update instantly.
 
@@ -94,7 +94,7 @@ Scandinavian-minimal, warm. Content looks like Papir (paper, serif headings, hai
 
 ## Screens
 
-1. **Handleliste** (home — the screen opened most often, so the app launches here) — shared list, quick-add input pinned at top (keyboard-ready), merged items, tick off, clear checked. Items added from a recipe show a small recipe label.
+1. **Handleliste** (home — the screen opened most often, so the app launches here) — shared list, quick-add input pinned at top (keyboard-ready), tick off, clear checked. Items added from a recipe show a small recipe label.
 2. **Oppskrifter** — recipe cards with photo, search box, tag filter chips.
 3. **Recipe view** — photo, servings stepper (− 4 +) that rescales live, ingredients, steps, "Legg i handleliste" button, "Start matlaging" button.
 4. **Cooking mode** — large text, one step at a time or tick-off list, screen kept awake via the Wake Lock API, ingredient amounts at current servings.
@@ -130,14 +130,14 @@ Phone-first, but the same app works in a desktop browser (and can be installed a
 
 1. **Foundation** — Vite/React/TS project, PWA manifest + icons, Supabase project, schema + RLS, email + password login, deploy to Vercel. Verify it installs on iPhone.
 2. **Recipes** — CRUD editor, recipe view, scaling + unit display, photos, tags + search.
-3. **Shopping list** — list screen, quick-add, add-from-recipe with merging, realtime sync, offline cache.
+3. **Shopping list** — list screen, quick-add, add-from-recipe, realtime sync, offline cache.
 4. **Import** — URL import (JSON-LD + Claude), paste text, photo parsing, unit conversion on import.
 5. **Cooking mode** + polish (empty states, loading, haptics-feel, dark mode).
 6. **Later** — weekly meal plan, categories / store order.
 
 ## Verification
 
-- Unit tests (Vitest) for `units.ts`, `scale.ts`, `shopping.ts` merge logic — the parts most likely to have subtle bugs (rounding, fractions, unit promotion, merging).
+- Unit tests (Vitest) for `units.ts` and `scale.ts` — the parts most likely to have subtle bugs (rounding, fractions, unit promotion).
 - Import tested against a handful of real sites (Norwegian: matprat.no, tine.no; English: e.g. BBC Good Food, NYT Cooking) and a photo of a cookbook page.
 - Manual end-to-end on two iPhones: install to home screen, log in as two users, add recipe → scale → add to list on phone A, see it appear on phone B, tick off offline and confirm sync on reconnect.
 - Cooking mode: confirm screen stays on in installed PWA on iOS.
