@@ -1,4 +1,4 @@
-import { ChevronLeft, CookingPot, Minus, Plus } from 'lucide-react'
+import { ChevronLeft, CookingPot, Minus, Pencil, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { IngredientList } from '../components/IngredientList'
@@ -81,6 +81,9 @@ export function RecipePage() {
   return (
     <article>
       {backLink}
+      <Link to={`/oppskrifter/${recipe.id}/rediger`} className="float-button float-button-right glass" aria-label="Endre oppskrift">
+        <Pencil size={19} aria-hidden />
+      </Link>
 
       <div className="photo-fallback recipe-photo" aria-hidden="true">
         <CookingPot size={48} strokeWidth={1.5} />
@@ -125,9 +128,9 @@ export function RecipePage() {
       <h2 className="section-title">Fremgangsmåte</h2>
       <ol className="steps">
         {recipe.steps.map((step, index) => (
-          <li key={index}>
+          <li key={step.id}>
             <span className="step-number">{index + 1}</span>
-            <span>{step}</span>
+            <span>{step.text}</span>
           </li>
         ))}
       </ol>

@@ -23,6 +23,9 @@ export function scaleQuantity(quantity: number, fromServings: number, toServings
 }
 
 export function formatAmount(quantity: number, unit: string | null) {
+  // Scaled kg and l are rounded in g and dl, so ½ kg for 6 instead of 5 shows 600 g, not ½ kg.
+  if (unit === 'kg') return formatAmount(quantity * 1000, 'g')
+  if (unit === 'l') return formatAmount(quantity * 10, 'dl')
   if (unit === 'g') {
     const grams = quantity >= 100 ? roundTo(quantity, 10) : roundTo(quantity, 1)
     return grams >= 1000 ? `${decimal(grams / 1000)} kg` : `${grams} g`
@@ -38,4 +41,20 @@ export function ingredientAmount(ingredient: Ingredient, fromServings: number, t
   if (ingredient.quantity === null) return ''
   const quantity = ingredient.scalable ? scaleQuantity(ingredient.quantity, fromServings, toServings) : ingredient.quantity
   return formatAmount(quantity, ingredient.unit)
+}
+
+export const UNITS = ['g', 'kg', 'dl', 'l', 'ss', 'ts', 'krm', 'stk', 'fedd', 'boks', 'pakke', 'beger', 'klype', 'neve']
+
+const UNICODE_FRACTIONS: Record<string, number> = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3 }
+
+// Reads "2", "1,5", "1.5", "1/2", "1 1/2" and "1½". Null means empty; undefined means it couldn't be read.
+export function parseQuantity(text: string): number | null | undefined {
+  const value = text.trim().replace(',', '.')
+  if (!value) return null
+  const match = value.match(/^(\d+(?:\.\d+)?)?\s*(?:(\d+)\/(\d+)|([½¼¾⅓⅔]))?$/)
+  if (!match || (!match[1] && !match[2] && !match[4])) return undefined
+  const whole = match[1] ? Number(match[1]) : 0
+  const fraction = match[2] ? Number(match[2]) / Number(match[3]) : match[4] ? UNICODE_FRACTIONS[match[4]] : 0
+  const quantity = whole + fraction
+  return quantity > 0 && Number.isFinite(quantity) ? quantity : undefined
 }

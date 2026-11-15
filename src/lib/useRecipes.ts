@@ -17,10 +17,14 @@ export type RecipeSummary = {
   minutes: number | null
 }
 
+export type Step = { id: string; text: string }
+
 export type Recipe = RecipeSummary & {
   servings: number
+  prepMinutes: number | null
+  cookMinutes: number | null
   ingredients: Ingredient[]
-  steps: string[]
+  steps: Step[]
 }
 
 type SummaryRow = {
@@ -34,7 +38,7 @@ type SummaryRow = {
 type RecipeRow = SummaryRow & {
   servings: number
   ingredients: Ingredient[]
-  steps: { text: string }[]
+  steps: Step[]
 }
 
 const toSummary = (row: SummaryRow): RecipeSummary => ({
@@ -81,7 +85,7 @@ export function useRecipe(id: string) {
     supabase
       .from('recipes')
       .select(
-        'id, title, tags, prep_minutes, cook_minutes, servings, ingredients (id, quantity, unit, name, note, scalable), steps (text)',
+        'id, title, tags, prep_minutes, cook_minutes, servings, ingredients (id, quantity, unit, name, note, scalable), steps (id, text)',
       )
       .eq('id', id)
       .order('position', { referencedTable: 'ingredients' })
@@ -92,7 +96,14 @@ export function useRecipe(id: string) {
         // An id that isn't a uuid (an old link) is a 22P02 error rather than an empty result.
         if (error) return error.code === '22P02' ? setRecipe(null) : setError('Kunne ikke hente oppskriften.')
         if (!data) return setRecipe(null)
-        const loaded = { ...toSummary(data), servings: data.servings, ingredients: data.ingredients, steps: data.steps.map((s) => s.text) }
+        const loaded = {
+          ...toSummary(data),
+          servings: data.servings,
+          prepMinutes: data.prep_minutes,
+          cookMinutes: data.cook_minutes,
+          ingredients: data.ingredients,
+          steps: data.steps,
+        }
         recipeCache.set(id, loaded)
         setRecipe(loaded)
       })
@@ -106,4 +117,99 @@ export function useRecipe(id: string) {
 
 export function recipeMeta({ minutes, tags }: RecipeSummary) {
   return [...(minutes === null ? [] : [`${minutes} min`]), ...tags].join(' · ')
+}
+
+export type RecipeInput = {
+  title: string
+  servings: number
+  prepMinutes: number | null
+  cookMinutes: number | null
+  tags: string[]
+  // Rows without an id are new.
+  ingredients: (Omit<Ingredient, 'id'> & { id?: string })[]
+  steps: { id?: string; text: string }[]
+}
+
+const recipeRow = (recipe: RecipeInput) => ({
+  title: recipe.title,
+  servings: recipe.servings,
+  prep_minutes: recipe.prepMinutes,
+  cook_minutes: recipe.cookMinutes,
+  tags: recipe.tags,
+})
+
+const ingredientRows = (recipeId: string, recipe: RecipeInput) =>
+  recipe.ingredients.map(({ id, ...ingredient }, index) => ({
+    ...ingredient,
+    id: id ?? crypto.randomUUID(),
+    recipe_id: recipeId,
+    position: index + 1,
+  }))
+
+const stepRows = (recipeId: string, recipe: RecipeInput) =>
+  recipe.steps.map(({ id, text }, index) => ({ id: id ?? crypto.randomUUID(), recipe_id: recipeId, position: index + 1, text }))
+
+function throwFirstError(results: ({ error: unknown } | null)[]) {
+  const failed = results.find((result) => result?.error)
+  if (failed) throw failed.error
+}
+
+function forget(id?: string) {
+  listCache = null
+  if (id) recipeCache.delete(id)
+}
+
+export async function createRecipe(recipe: RecipeInput) {
+  const { data, error } = await supabase.from('recipes').insert(recipeRow(recipe)).select('id').single()
+  if (error) throw error
+
+  const id: string = data.id
+  const ingredients = ingredientRows(id, recipe)
+  const steps = stepRows(id, recipe)
+  try {
+    throwFirstError(
+      await Promise.all([
+        ingredients.length > 0 ? supabase.from('ingredients').insert(ingredients) : null,
+        steps.length > 0 ? supabase.from('steps').insert(steps) : null,
+      ]),
+    )
+  } catch (failed) {
+    // Otherwise a failed second request leaves a recipe without its ingredients or steps.
+    await supabase.from('recipes').delete().eq('id', id)
+    throw failed
+  }
+
+  forget()
+  return id
+}
+
+function deleteRowsExcept(table: 'ingredients' | 'steps', recipeId: string, keep: string[]) {
+  const query = supabase.from(table).delete().eq('recipe_id', recipeId)
+  return keep.length > 0 ? query.not('id', 'in', `(${keep.join(',')})`) : query
+}
+
+export async function updateRecipe(id: string, recipe: RecipeInput) {
+  const ingredients = ingredientRows(id, recipe)
+  const steps = stepRows(id, recipe)
+  throwFirstError(
+    await Promise.all([
+      supabase.from('recipes').update({ ...recipeRow(recipe), updated_at: new Date().toISOString() }).eq('id', id),
+      ingredients.length > 0 ? supabase.from('ingredients').upsert(ingredients) : null,
+      steps.length > 0 ? supabase.from('steps').upsert(steps) : null,
+    ]),
+  )
+  // Removed rows go only after the rest is saved, so a failure never leaves the recipe with less than before.
+  throwFirstError(
+    await Promise.all([
+      deleteRowsExcept('ingredients', id, ingredients.map((row) => row.id)),
+      deleteRowsExcept('steps', id, steps.map((row) => row.id)),
+    ]),
+  )
+  forget(id)
+}
+
+export async function deleteRecipe(id: string) {
+  const { error } = await supabase.from('recipes').delete().eq('id', id)
+  if (error) throw error
+  forget(id)
 }

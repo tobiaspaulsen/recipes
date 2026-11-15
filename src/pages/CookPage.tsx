@@ -62,7 +62,7 @@ export function CookPage() {
         {recipe.steps.map((step, index) => {
           const done = doneSteps.has(index)
           return (
-            <li key={index}>
+            <li key={step.id}>
               <button
                 type="button"
                 className="step-toggle"
@@ -73,7 +73,7 @@ export function CookPage() {
                 <span className="step-check" aria-hidden="true">
                   {done ? <Check size={16} strokeWidth={3} /> : index + 1}
                 </span>
-                <span>{step}</span>
+                <span>{step.text}</span>
               </button>
             </li>
           )

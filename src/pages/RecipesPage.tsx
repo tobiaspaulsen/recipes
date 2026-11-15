@@ -1,4 +1,4 @@
-import { CookingPot } from 'lucide-react'
+import { CookingPot, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { recipeMeta, useRecipes } from '../lib/useRecipes'
 
@@ -7,14 +7,19 @@ export function RecipesPage() {
 
   return (
     <>
-      <h1 className="page-title">Oppskrifter</h1>
+      <div className="page-header">
+        <h1 className="page-title">Oppskrifter</h1>
+        <Link to="/oppskrifter/ny" className="icon-button glass" aria-label="Ny oppskrift">
+          <Plus size={22} aria-hidden />
+        </Link>
+      </div>
 
       {error && <p className="error">{error}</p>}
 
       {recipes?.length === 0 && (
         <div className="empty">
           <h2>Ingen oppskrifter ennå</h2>
-          <p>Oppskrifter dere legger inn, dukker opp her.</p>
+          <p>Trykk + for å legge inn den første.</p>
         </div>
       )}
 
