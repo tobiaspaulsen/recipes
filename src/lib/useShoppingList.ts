@@ -7,9 +7,17 @@ export type ShoppingItem = {
   checked: boolean
   checkedAt: number | null
   createdAt: string
+  recipeId: string | null
 }
 
-type Row = { id: string; name: string; checked: boolean; checked_at: string | null; created_at: string }
+type Row = {
+  id: string
+  name: string
+  checked: boolean
+  checked_at: string | null
+  created_at: string
+  recipe_id: string | null
+}
 
 type Op =
   | { kind: 'insert'; rows: Row[] }
@@ -26,6 +34,8 @@ const toItem = (row: Row): ShoppingItem => ({
   checked: row.checked,
   checkedAt: row.checked_at ? Date.parse(row.checked_at) : null,
   createdAt: row.created_at,
+  // Items cached or queued before recipe_id existed lack the field.
+  recipeId: row.recipe_id ?? null,
 })
 
 const toRow = (item: ShoppingItem): Row => ({
@@ -34,6 +44,7 @@ const toRow = (item: ShoppingItem): Row => ({
   checked: item.checked,
   checked_at: item.checkedAt ? new Date(item.checkedAt).toISOString() : null,
   created_at: item.createdAt,
+  recipe_id: item.recipeId,
 })
 
 function apply(items: ShoppingItem[], op: Op): ShoppingItem[] {
@@ -101,7 +112,7 @@ export function useShoppingList() {
   const refresh = useCallback(async () => {
     const sentBefore = sent.current
     const { data, error, status } = await table()
-      .select('id, name, checked, checked_at, created_at')
+      .select('id, name, checked, checked_at, created_at, recipe_id')
       .order('created_at')
     if (error) {
       if (isRetryable(status)) setOffline(true)
@@ -150,8 +161,9 @@ export function useShoppingList() {
       if (pendingRef.current.length === 0) refresh()
     }
     sync()
+    // channel() returns an existing channel with the same name, and removal is async, so a page switch would get the dying one.
     const channel = supabase
-      .channel('shopping_items')
+      .channel(`shopping_items:${crypto.randomUUID()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_items' }, () => refresh())
       .subscribe()
     // iOS suspends the realtime socket in the background; catch up when the app comes back.
@@ -179,9 +191,20 @@ export function useShoppingList() {
     flush()
   }
 
-  const add = (name: string) => {
-    const item = { id: crypto.randomUUID(), name, checked: false, checkedAt: null, createdAt: new Date().toISOString() }
-    enqueue({ kind: 'insert', rows: [toRow(item)] })
+  const add = (names: string[], recipeId: string | null = null) => {
+    const now = Date.now()
+    const rows = names.map((name, index) =>
+      toRow({
+        id: crypto.randomUUID(),
+        name,
+        checked: false,
+        checkedAt: null,
+        // One millisecond apart so items added together keep their order when sorted by created_at.
+        createdAt: new Date(now + index).toISOString(),
+        recipeId,
+      }),
+    )
+    if (rows.length) enqueue({ kind: 'insert', rows })
   }
 
   const toggle = (id: string) => {

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { fadeOut, useFlip } from '../lib/motion'
 import { useKeyboardInset } from '../lib/useKeyboardInset'
 import { PULL_THRESHOLD, usePullToRefresh } from '../lib/usePullToRefresh'
+import { useRecipes } from '../lib/useRecipes'
 import { useShoppingList, type ShoppingItem } from '../lib/useShoppingList'
 
 type Undo = { label: string; items: ShoppingItem[] }
@@ -14,6 +15,7 @@ export function ShoppingListPage() {
   const [undo, setUndo] = useState<Undo | null>(null)
   const keyboardInset = useKeyboardInset()
   const { pull, refreshing } = usePullToRefresh(refresh)
+  const { recipes } = useRecipes()
   const listRef = useRef<HTMLDivElement>(null)
   const doneRef = useRef<HTMLElement>(null)
   const clearing = useRef(false)
@@ -62,11 +64,12 @@ export function ShoppingListPage() {
     event.preventDefault()
     const name = draft.trim()
     if (!name) return
-    add(name)
+    add([name])
     setDraft('')
   }
 
-  const rowProps = { onToggle: toggle, onRename: rename, onRemove: removeWithUndo, animate: settled.current }
+  const recipeTitles = new Map(recipes?.map((recipe) => [recipe.id, recipe.title]))
+  const rowProps = { recipeTitles, onToggle: toggle, onRename: rename, onRemove: removeWithUndo, animate: settled.current }
 
   return (
     <>
@@ -165,18 +168,20 @@ export function ShoppingListPage() {
 
 type ItemRowProps = {
   item: ShoppingItem
+  recipeTitles: Map<string, string>
   onToggle: (id: string) => void
   onRename: (id: string, name: string) => void
   onRemove: (id: string) => void
   animate: boolean
 }
 
-function ItemRow({ item, onToggle, onRename, onRemove, animate }: ItemRowProps) {
+function ItemRow({ item, recipeTitles, onToggle, onRename, onRemove, animate }: ItemRowProps) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(item.name)
   // Toggling moves the row to the other list, so it mounts fresh; only rows mounted after load pop their check.
   const [pop] = useState(animate)
   const rowRef = useRef<HTMLLIElement>(null)
+  const recipeTitle = item.recipeId ? recipeTitles.get(item.recipeId) : undefined
 
   async function removeAnimated() {
     await fadeOut(rowRef.current)
@@ -242,6 +247,7 @@ function ItemRow({ item, onToggle, onRename, onRemove, animate }: ItemRowProps) 
       ) : (
         <button type="button" className="item-name" onClick={startEditing}>
           {item.name}
+          {recipeTitle && <span className="item-recipe">{recipeTitle}</span>}
         </button>
       )}
     </li>

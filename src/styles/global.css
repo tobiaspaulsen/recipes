@@ -191,6 +191,8 @@ body {
 }
 
 .text-button {
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -198,6 +200,7 @@ body {
   color: var(--accent);
   font: inherit;
   font-size: 14px;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -365,7 +368,8 @@ body {
   border: 1.5px solid var(--ring);
   border-radius: 50%;
 }
-.item[data-checked='true'] .check {
+.item[data-checked='true'] .check,
+.check[data-on='true'] {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
@@ -391,6 +395,14 @@ body {
 .item[data-checked='true'] .item-name {
   color: var(--muted);
   text-decoration: line-through;
+}
+.item-recipe {
+  /* inline-block keeps the strike-through of a ticked item off the label. */
+  display: inline-block;
+  width: 100%;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .done-header {
@@ -567,6 +579,27 @@ body {
   font-variant-numeric: tabular-nums;
 }
 .ingredients .note {
+  color: var(--muted);
+}
+.ingredients[data-selecting] li {
+  display: block;
+  padding: 0;
+}
+.ingredient-toggle {
+  display: grid;
+  grid-template-columns: 22px 84px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ingredient-toggle[aria-checked='false'] {
   color: var(--muted);
 }
 .steps {
