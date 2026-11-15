@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { IngredientList } from '../components/IngredientList'
@@ -11,10 +11,7 @@ export function CookPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { recipe, error } = useRecipe(id)
-  // 0 is the ingredient overview; 1..n are the steps.
-  const [index, setIndex] = useState(0)
-  const [showIngredients, setShowIngredients] = useState(false)
-  const [gathered, setGathered] = useState<Set<string>>(new Set())
+  const [doneSteps, setDoneSteps] = useState<Set<number>>(new Set())
   useWakeLock()
 
   // Opened directly (e.g. after a reload) there is no history entry to go back to.
@@ -39,68 +36,49 @@ export function CookPage() {
 
   const requested = Number(params.get('porsjoner'))
   const servings = Number.isInteger(requested) && requested > 0 ? requested : recipe.servings
-  const stepCount = recipe.steps.length
-  const onIngredients = index === 0 || showIngredients
 
-  function go(next: number) {
-    setShowIngredients(false)
-    setIndex(next)
-    window.scrollTo(0, 0)
-  }
-
-  function toggleGathered(ingredientId: string) {
-    setGathered((prev) => {
+  function toggleStep(index: number) {
+    setDoneSteps((prev) => {
       const next = new Set(prev)
-      if (!next.delete(ingredientId)) next.add(ingredientId)
+      if (!next.delete(index)) next.add(index)
       return next
     })
   }
 
   return (
-    <div className="cook">
+    <article className="cook">
       {closeButton}
 
-      <header className="cook-header">
-        <span>{index === 0 ? recipe.title : `Steg ${index} av ${stepCount}`}</span>
-        {index > 0 && (
-          <button type="button" className="text-button" onClick={() => setShowIngredients((shown) => !shown)}>
-            {showIngredients ? 'Tilbake til steget' : 'Ingredienser'}
-          </button>
-        )}
-      </header>
+      <p className="cook-header">
+        {servings} {servings === 1 ? 'person' : 'personer'}
+      </p>
+      <h1 className="page-title">{recipe.title}</h1>
 
-      {onIngredients ? (
-        <>
-          <h1 className="cook-title">Ingredienser</h1>
-          <p className="recipe-meta">
-            {servings} {servings === 1 ? 'person' : 'personer'}
-          </p>
-          <IngredientList
-            className="cook-ingredients"
-            ingredients={recipe.ingredients}
-            fromServings={recipe.servings}
-            toServings={servings}
-            checkable={{ isChecked: (ingredientId) => gathered.has(ingredientId), onToggle: toggleGathered }}
-          />
-        </>
-      ) : (
-        <p className="cook-step">{recipe.steps[index - 1]}</p>
-      )}
+      <h2 className="section-title">Ingredienser</h2>
+      <IngredientList ingredients={recipe.ingredients} fromServings={recipe.servings} toServings={servings} />
 
-      <div className="action-bar cook-bar glass">
-        <button type="button" disabled={index === 0} onClick={() => go(index - 1)}>
-          Forrige
-        </button>
-        {index < stepCount ? (
-          <button type="button" className="primary" onClick={() => go(index + 1)}>
-            {index === 0 ? 'Start' : 'Neste'}
-          </button>
-        ) : (
-          <button type="button" className="primary" onClick={close}>
-            Ferdig
-          </button>
-        )}
-      </div>
-    </div>
+      <h2 className="section-title">Fremgangsmåte</h2>
+      <ol className="steps">
+        {recipe.steps.map((step, index) => {
+          const done = doneSteps.has(index)
+          return (
+            <li key={index}>
+              <button
+                type="button"
+                className="step-toggle"
+                role="checkbox"
+                aria-checked={done}
+                onClick={() => toggleStep(index)}
+              >
+                <span className="step-check" aria-hidden="true">
+                  {done ? <Check size={16} strokeWidth={3} /> : index + 1}
+                </span>
+                <span>{step}</span>
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </article>
   )
 }

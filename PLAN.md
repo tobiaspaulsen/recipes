@@ -97,7 +97,7 @@ Scandinavian-minimal, warm. Content looks like Papir (paper, serif headings, hai
 1. **Handleliste** (home — the screen opened most often, so the app launches here) — shared list, quick-add input pinned at top (keyboard-ready), tick off, clear checked. Items added from a recipe show a small recipe label.
 2. **Oppskrifter** — recipe cards with photo, search box, tag filter chips.
 3. **Recipe view** — photo, servings stepper (− 4 +) that rescales live, ingredients, steps, "Legg i handleliste" button, "Start matlaging" button.
-4. **Cooking mode** — large text, one step at a time or tick-off list, screen kept awake via the Wake Lock API, ingredient amounts at current servings.
+4. **Cooking mode** — the whole recipe on one page (no tab bar, no step-by-step paging), steps can be ticked off, screen kept awake via the Wake Lock API, ingredient amounts at the servings chosen on the recipe.
 5. **Recipe editor** — title, servings, tags, photo upload, ingredient rows (amount / unit picker / name / note), steps, reorder.
 6. **Ny oppskrift** — choose: type manually / paste link / paste text / take or pick photo.
 7. **Innstillinger** — log in (email + password), log out.

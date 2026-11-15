@@ -606,38 +606,47 @@ body {
 }
 
 .cook-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 44px;
-  margin-top: 24px;
+  margin: 24px 0 8px;
   color: var(--muted);
   font-size: 14px;
 }
-.cook-title {
-  margin: 12px 0 4px;
-  font-family: var(--font-serif);
-  font-weight: 500;
-  font-size: 32px;
+.cook .steps li {
+  display: block;
 }
-.cook-ingredients {
-  font-size: 19px;
+.step-toggle {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.cook-ingredients .ingredient-toggle[aria-checked='true'] {
+.step-toggle[aria-checked='true'] {
   color: var(--muted);
 }
-.cook-ingredients .ingredient-toggle[aria-checked='true'] > span:last-child {
-  text-decoration: line-through;
+.step-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--ring);
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
-.cook-step {
-  margin: 24px 0 0;
-  font-family: var(--font-serif);
-  font-size: 28px;
-  line-height: 1.4;
-}
-.cook-bar {
-  bottom: var(--tabbar-bottom);
+.step-toggle[aria-checked='true'] .step-check {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 .steps {
   display: flex;
