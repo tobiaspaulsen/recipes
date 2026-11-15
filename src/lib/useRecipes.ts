@@ -17,6 +17,7 @@ export type RecipeSummary = {
   tags: string[]
   minutes: number | null
   imagePath: string | null
+  ingredientNames: string[]
 }
 
 export type Step = { id: string; text: string }
@@ -37,6 +38,7 @@ type SummaryRow = {
   prep_minutes: number | null
   cook_minutes: number | null
   image_path: string | null
+  ingredients: { name: string }[]
 }
 
 type RecipeRow = SummaryRow & {
@@ -52,6 +54,7 @@ const toSummary = (row: SummaryRow): RecipeSummary => ({
   tags: row.tags,
   minutes: row.prep_minutes === null && row.cook_minutes === null ? null : (row.prep_minutes ?? 0) + (row.cook_minutes ?? 0),
   imagePath: row.image_path,
+  ingredientNames: row.ingredients.map((ingredient) => ingredient.name),
 })
 
 // Kept between mounts so going back shows the last result at once and scroll restoration has content to land on.
@@ -66,7 +69,7 @@ export function useRecipes() {
     let active = true
     supabase
       .from('recipes')
-      .select('id, title, tags, prep_minutes, cook_minutes, image_path')
+      .select('id, title, tags, prep_minutes, cook_minutes, image_path, ingredients (name)')
       .order('title')
       .then(({ data, error }) => {
         if (!active) return

@@ -16,7 +16,7 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 | Language | UI in Norwegian. Recipe text stays in its original language (e.g. English) |
 | Units | Converted to Norwegian units **on import** (cups → dl, oz/lb → g, °F → °C, tbsp/tsp → ss/ts). Original source URL kept |
 | Extras in v1 | Dish photos, tags + search, cooking mode |
-| Later | Weekly meal plan, custom store order / categories |
+| Later | Weekly meal plan, custom store order / categories, "what can we make" from what's in the fridge |
 
 ## Stack
 
@@ -95,7 +95,7 @@ Scandinavian-minimal, warm. Content looks like Papir (paper, serif headings, hai
 ## Screens
 
 1. **Handleliste** (home — the screen opened most often, so the app launches here) — shared list, quick-add input pinned at top (keyboard-ready), tick off, clear checked. Items added from a recipe show a small recipe label.
-2. **Oppskrifter** — recipe cards with photo, search box, tag filter chips.
+2. **Oppskrifter** — recipe cards with photo, search box (matches title, tags and ingredient names; every word must match, title matches first), tag filter chips.
 3. **Recipe view** — photo, servings stepper (− 4 +) that rescales live, ingredients, steps, "Legg i handleliste" button, "Start matlaging" button.
 4. **Cooking mode** — the whole recipe on one page (no tab bar, no step-by-step paging), steps can be ticked off, screen kept awake via the Wake Lock API, ingredient amounts at the servings chosen on the recipe.
 5. **Recipe editor** — title, servings, tags, photo upload, ingredient rows (amount / unit picker / name / note), steps, reorder.
@@ -133,7 +133,10 @@ Phone-first, but the same app works in a desktop browser (and can be installed a
 3. **Shopping list** — list screen, quick-add, add-from-recipe, realtime sync, offline cache.
 4. **Import** — URL import (JSON-LD + Claude), paste text, photo parsing, unit conversion on import.
 5. **Cooking mode** + polish (empty states, loading, haptics-feel, dark mode).
-6. **Later** — weekly meal plan, categories / store order.
+6. **Later** — weekly meal plan, categories / store order, and fridge matching:
+   - Enter what you have as chips ("kylling", "brokkoli", "feta"); recipes are ranked by how many of them they use and how few other ingredients are missing ("Mangler 2: fløte, parmesan").
+   - Pantry basics (salt, pepper, olje, smør, ...) never count as missing.
+   - Matching runs on the phone over the ingredient names already loaded for search. Needs a short list of irregular forms (gulrot/gulrøtter, mandel/mandler) and whole-word or word-start matching for short words, so "løk" doesn't count hvitløk and "egg" doesn't count eggenudler.
 
 ## Verification
 
