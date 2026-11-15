@@ -6,6 +6,7 @@ import { recipeMeta, useRecipes, type RecipeSummary } from '../lib/useRecipes'
 
 // Kept between visits, so going back from a recipe shows the same results.
 let lastQuery = ''
+let lastTags: string[] = []
 
 const lower = (text: string) => text.toLocaleLowerCase('nb')
 
@@ -26,10 +27,26 @@ function search(recipes: RecipeSummary[], query: string) {
     .map((result) => result.recipe)
 }
 
+// Most used first, so the main categories come before one-off tags.
+function tagsByUse(recipes: RecipeSummary[]) {
+  const counts = new Map<string, number>()
+  for (const recipe of recipes) for (const tag of recipe.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1)
+  return [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)! || a.localeCompare(b, 'nb'))
+}
+
 export function RecipesPage() {
   const { recipes, error } = useRecipes()
   const [query, setQuery] = useState(lastQuery)
-  const results = recipes && search(recipes, query)
+  const [selectedTags, setSelectedTags] = useState(lastTags)
+  const allTags = recipes ? tagsByUse(recipes) : []
+  const results =
+    recipes && search(recipes, query).filter((recipe) => selectedTags.every((tag) => recipe.tags.includes(tag)))
+
+  function toggleTag(tag: string) {
+    const next = selectedTags.includes(tag) ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag]
+    lastTags = next
+    setSelectedTags(next)
+  }
 
   function changeQuery(next: string) {
     lastQuery = next
@@ -73,6 +90,16 @@ export function RecipesPage() {
         </form>
       )}
 
+      {allTags.length > 0 && (
+        <div className="tag-chips" role="group" aria-label="Filtrer på tagg">
+          {allTags.map((tag) => (
+            <button key={tag} type="button" aria-pressed={selectedTags.includes(tag)} onClick={() => toggleTag(tag)}>
+              <span>{tag}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && <p className="error">{error}</p>}
 
       {recipes?.length === 0 && (
@@ -85,7 +112,10 @@ export function RecipesPage() {
       {recipes && recipes.length > 0 && results?.length === 0 && (
         <div className="empty">
           <h2>Ingen treff</h2>
-          <p>Ingen oppskrifter med «{query.trim()}».</p>
+          <p>
+            {query.trim() ? `Ingen oppskrifter med «${query.trim()}»` : 'Ingen oppskrifter'}
+            {selectedTags.length > 0 ? ` og ${selectedTags.length === 1 ? 'taggen' : 'taggene'} ${selectedTags.join(' + ')}` : ''}.
+          </p>
         </div>
       )}
 

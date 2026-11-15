@@ -1053,3 +1053,40 @@ textarea.editor-input {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+.tag-chips {
+  display: flex;
+  gap: 8px;
+  /* Bleeds to the screen edges so the row can scroll past the page padding. */
+  margin: 8px -24px 0;
+  padding: 0 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tag-chips::-webkit-scrollbar {
+  display: none;
+}
+/* The button is a 44px tap target; the visible chip inside it is smaller. */
+.tag-chips button {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tag-chips span {
+  display: block;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.tag-chips button[aria-pressed='true'] span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
