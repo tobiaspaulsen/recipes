@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { removePhoto } from './photos'
 import { supabase } from './supabase'
 
 export type Ingredient = {
@@ -14,6 +15,7 @@ export type RecipeSummary = {
   title: string
   tags: string[]
   minutes: number | null
+  imagePath: string | null
 }
 
 export type Step = { id: string; text: string }
@@ -32,6 +34,7 @@ type SummaryRow = {
   tags: string[]
   prep_minutes: number | null
   cook_minutes: number | null
+  image_path: string | null
 }
 
 type RecipeRow = SummaryRow & {
@@ -45,6 +48,7 @@ const toSummary = (row: SummaryRow): RecipeSummary => ({
   title: row.title,
   tags: row.tags,
   minutes: row.prep_minutes === null && row.cook_minutes === null ? null : (row.prep_minutes ?? 0) + (row.cook_minutes ?? 0),
+  imagePath: row.image_path,
 })
 
 // Kept between mounts so going back shows the last result at once and scroll restoration has content to land on.
@@ -59,7 +63,7 @@ export function useRecipes() {
     let active = true
     supabase
       .from('recipes')
-      .select('id, title, tags, prep_minutes, cook_minutes')
+      .select('id, title, tags, prep_minutes, cook_minutes, image_path')
       .order('title')
       .then(({ data, error }) => {
         if (!active) return
@@ -84,7 +88,7 @@ export function useRecipe(id: string) {
     supabase
       .from('recipes')
       .select(
-        'id, title, tags, prep_minutes, cook_minutes, servings, ingredients (id, quantity, unit, name, note), steps (id, text)',
+        'id, title, tags, prep_minutes, cook_minutes, image_path, servings, ingredients (id, quantity, unit, name, note), steps (id, text)',
       )
       .eq('id', id)
       .order('position', { referencedTable: 'ingredients' })
@@ -124,6 +128,7 @@ export type RecipeInput = {
   prepMinutes: number | null
   cookMinutes: number | null
   tags: string[]
+  imagePath: string | null
   // Rows without an id are new.
   ingredients: (Omit<Ingredient, 'id'> & { id?: string })[]
   steps: { id?: string; text: string }[]
@@ -135,6 +140,7 @@ const recipeRow = (recipe: RecipeInput) => ({
   prep_minutes: recipe.prepMinutes,
   cook_minutes: recipe.cookMinutes,
   tags: recipe.tags,
+  image_path: recipe.imagePath,
 })
 
 const ingredientRows = (recipeId: string, recipe: RecipeInput) =>
@@ -207,8 +213,10 @@ export async function updateRecipe(id: string, recipe: RecipeInput) {
   forget(id)
 }
 
-export async function deleteRecipe(id: string) {
+export async function deleteRecipe(id: string, imagePath: string | null) {
   const { error } = await supabase.from('recipes').delete().eq('id', id)
   if (error) throw error
   forget(id)
+  // A leftover file is harmless, so a failure here doesn't fail the delete.
+  if (imagePath) await removePhoto(imagePath).catch(() => {})
 }

@@ -496,6 +496,14 @@ body {
   aspect-ratio: 4 / 3;
   margin: -48px -24px 24px;
   border-radius: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+}
+.recipe-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 @media (min-width: 640px) {
   .recipe-photo {
@@ -919,4 +927,58 @@ textarea.editor-input {
 }
 .confirm-actions button {
   flex: 1;
+}
+
+.recipe-card-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+}
+
+.editor-photo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.editor-photo-frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+  cursor: pointer;
+}
+.editor-photo-frame:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.editor-photo-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.editor-photo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  color: var(--accent);
+  font-size: 15px;
+}
+.editor-photo-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.editor-photo-hint {
+  color: var(--muted);
+  font-size: 14px;
 }

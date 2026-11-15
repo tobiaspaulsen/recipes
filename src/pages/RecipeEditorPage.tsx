@@ -1,8 +1,9 @@
-import { ChevronDown, ChevronUp, Minus, Plus, Trash2, X } from 'lucide-react'
+import { Camera, ChevronDown, ChevronUp, Minus, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useConfirm } from '../components/ConfirmDialog'
 import { useFlip } from '../lib/motion'
+import { photoUrl, preparePhoto, removePhoto, uploadPhoto, type PreparedPhoto } from '../lib/photos'
 import { parseQuantity, UNITS } from '../lib/scale'
 import { createRecipe, deleteRecipe, updateRecipe, useRecipe, type Recipe } from '../lib/useRecipes'
 
@@ -15,6 +16,7 @@ type IngredientDraft = {
   note: string
 }
 type StepDraft = { key: string; id?: string; text: string }
+type PhotoDraft = { kind: 'saved'; path: string } | { kind: 'new'; photo: PreparedPhoto } | null
 
 const newIngredient = (): IngredientDraft => ({
   key: crypto.randomUUID(),
@@ -101,6 +103,8 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
   const [steps, setSteps] = useState<StepDraft[]>(() =>
     recipe?.steps.length ? recipe.steps.map((s) => ({ key: s.id, id: s.id, text: s.text })) : [newStep(), newStep()],
   )
+  const [photo, setPhoto] = useState<PhotoDraft>(recipe?.imagePath ? { kind: 'saved', path: recipe.imagePath } : null)
+  const [readingPhoto, setReadingPhoto] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirm, confirmDialog] = useConfirm()
@@ -114,7 +118,8 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
   useFlip(ingredientsRef, mounted.current)
   useFlip(stepsRef, mounted.current)
 
-  const snapshot = JSON.stringify([title, servings, prep, cook, tags, ingredients, steps])
+  const photoSrc = photo?.kind === 'new' ? photo.photo.preview : photo ? photoUrl(photo.path, 'small') : null
+  const snapshot = JSON.stringify([title, servings, prep, cook, tags, ingredients, steps, photo])
   const initialSnapshot = useRef(snapshot)
   const dirty = snapshot !== initialSnapshot.current
 
@@ -133,6 +138,18 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
     setIngredients((prev) => prev.map((i) => (i.key === key ? { ...i, ...patch } : i)))
   const updateStep = (key: string, text: string) =>
     setSteps((prev) => prev.map((s) => (s.key === key ? { ...s, text } : s)))
+
+  async function pickPhoto(file: File | undefined) {
+    if (!file) return
+    setReadingPhoto(true)
+    try {
+      setPhoto({ kind: 'new', photo: await preparePhoto(file) })
+    } catch {
+      fail('Kunne ikke lese bildet. Prøv et annet.')
+    } finally {
+      setReadingPhoto(false)
+    }
+  }
 
   function fail(message: string) {
     setError(message)
@@ -161,6 +178,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
       prepMinutes,
       cookMinutes,
       tags: uniqueTags(tags),
+      imagePath: photo?.kind === 'saved' ? photo.path : null,
       ingredients: parsed.map((i) => ({
         id: i.id,
         quantity: i.amount ?? null,
@@ -174,8 +192,11 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
     setError(null)
     setBusy(true)
     try {
+      if (photo?.kind === 'new') input.imagePath = await uploadPhoto(photo.photo)
       if (recipe) {
         await updateRecipe(recipe.id, input)
+        // Only after the recipe points at the new photo (or none); a leftover file is harmless.
+        if (recipe.imagePath && recipe.imagePath !== input.imagePath) removePhoto(recipe.imagePath).catch(() => {})
         leave()
       } else {
         const id = await createRecipe(input)
@@ -192,7 +213,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
     if (!(await confirm(`Slette «${recipe.title}»? Dette kan ikke angres.`, 'Slett'))) return
     setBusy(true)
     try {
-      await deleteRecipe(recipe.id)
+      await deleteRecipe(recipe.id, recipe.imagePath)
       navigate('/oppskrifter', { replace: true })
     } catch {
       fail('Kunne ikke slette oppskriften. Sjekk nettet og prøv igjen.')
@@ -216,6 +237,38 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
             {error}
           </p>
         )}
+
+        <div className="editor-photo">
+          <label className="editor-photo-frame" aria-busy={readingPhoto}>
+            {photoSrc ? (
+              <img src={photoSrc} alt="" />
+            ) : (
+              <span className="editor-photo-empty">
+                <Camera size={28} strokeWidth={1.5} aria-hidden />
+                {readingPhoto ? 'Leser bildet…' : 'Legg til bilde'}
+              </span>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              aria-label={photo ? 'Bytt bilde' : 'Legg til bilde'}
+              onChange={(e) => {
+                pickPhoto(e.target.files?.[0])
+                // Lets the same file be picked again after removing it.
+                e.target.value = ''
+              }}
+            />
+          </label>
+          {photo && (
+            <div className="editor-photo-actions">
+              <span className="editor-photo-hint">Trykk på bildet for å bytte</span>
+              <button type="button" className="text-button" onClick={() => setPhoto(null)}>
+                Fjern bilde
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="field">
           <label htmlFor="title">Tittel</label>

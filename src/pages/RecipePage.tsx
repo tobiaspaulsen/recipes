@@ -2,6 +2,7 @@ import { ChevronLeft, CookingPot, Minus, Pencil, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { IngredientList } from '../components/IngredientList'
+import { photoUrl } from '../lib/photos'
 import { ingredientAmount } from '../lib/scale'
 import { recipeMeta, useRecipe } from '../lib/useRecipes'
 import { useShoppingList } from '../lib/useShoppingList'
@@ -85,9 +86,15 @@ export function RecipePage() {
         <Pencil size={19} aria-hidden />
       </Link>
 
-      <div className="photo-fallback recipe-photo" aria-hidden="true">
-        <CookingPot size={48} strokeWidth={1.5} />
-      </div>
+      {recipe.imagePath ? (
+        <div className="recipe-photo">
+          <img src={photoUrl(recipe.imagePath, 'full')} alt="" />
+        </div>
+      ) : (
+        <div className="photo-fallback recipe-photo" aria-hidden="true">
+          <CookingPot size={48} strokeWidth={1.5} />
+        </div>
+      )}
 
       <p className="recipe-meta">{recipeMeta(recipe)}</p>
       <h1 className="page-title">{recipe.title}</h1>

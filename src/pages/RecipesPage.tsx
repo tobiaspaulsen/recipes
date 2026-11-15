@@ -1,5 +1,6 @@
 import { CookingPot, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { photoUrl } from '../lib/photos'
 import { recipeMeta, useRecipes } from '../lib/useRecipes'
 
 export function RecipesPage() {
@@ -27,9 +28,13 @@ export function RecipesPage() {
         {recipes?.map((recipe) => (
           <li key={recipe.id}>
             <Link to={`/oppskrifter/${recipe.id}`}>
-              <div className="photo-fallback" aria-hidden="true">
-                <CookingPot size={32} strokeWidth={1.5} />
-              </div>
+              {recipe.imagePath ? (
+                <img className="recipe-card-photo" src={photoUrl(recipe.imagePath, 'small')} alt="" loading="lazy" />
+              ) : (
+                <div className="photo-fallback" aria-hidden="true">
+                  <CookingPot size={32} strokeWidth={1.5} />
+                </div>
+              )}
               <span className="recipe-card-title">{recipe.title}</span>
               <span className="recipe-meta">{recipeMeta(recipe)}</span>
             </Link>
