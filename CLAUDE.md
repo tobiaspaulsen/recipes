@@ -26,7 +26,10 @@ Phone-first PWA for household recipes and a shared shopping list. See `PLAN.md` 
 ## Database
 
 - Migrations live in `supabase/migrations/` named `YYYYMMDDHHMMSS_description.sql` (Supabase CLI format).
-- They're run by hand in the Supabase SQL Editor; don't push app code that needs a migration before it has been run.
+- Applied with the Supabase CLI (project is linked): `supabase db push --remote --dry-run` to preview, then the user runs `supabase db push --remote --yes` themselves; production writes are blocked from Claude Code.
+- Don't push app code that needs a migration before it has been applied to production.
+- `supabase/seed.sql` holds optional example recipes; it's only applied with `--include-seed`.
+- `supabase start` runs a local copy in Docker (needed by the Supabase VS Code extension); the app's `.env` still points at production.
 
 ## Commands
 

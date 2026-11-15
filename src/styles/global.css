@@ -148,6 +148,9 @@ body {
   color: var(--accent);
   font-size: 14px;
 }
+.recipe-error {
+  margin-top: 40px;
+}
 .offline-note {
   color: var(--muted);
   font-size: 14px;
@@ -562,6 +565,9 @@ body {
 .ingredients .amount {
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+.ingredients .note {
+  color: var(--muted);
 }
 .steps {
   display: flex;

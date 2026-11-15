@@ -1,34 +1,49 @@
 import { ChevronLeft, CookingPot, Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { recipes } from '../data/recipes'
 import { formatAmount, scaleQuantity } from '../lib/scale'
+import { recipeMeta, useRecipe } from '../lib/useRecipes'
 
 export function RecipePage() {
-  const { id } = useParams()
-  const recipe = recipes.find((r) => r.id === id)
-  const [servings, setServings] = useState(recipe?.servings ?? 4)
+  const { id = '' } = useParams()
+  const { recipe, error } = useRecipe(id)
+  const [chosenServings, setServings] = useState<number | null>(null)
 
-  if (!recipe) return <Navigate to="/oppskrifter" replace />
+  if (recipe === null) return <Navigate to="/oppskrifter" replace />
+
+  const backLink = (
+    <Link to="/oppskrifter" className="float-button glass" aria-label="Tilbake til oppskrifter">
+      <ChevronLeft size={22} aria-hidden />
+    </Link>
+  )
+
+  if (!recipe) {
+    return (
+      <article>
+        {backLink}
+        {error && <p className="error recipe-error">{error}</p>}
+      </article>
+    )
+  }
+
+  const servings = chosenServings ?? recipe.servings
 
   return (
     <article>
-      <Link to="/oppskrifter" className="float-button glass" aria-label="Tilbake til oppskrifter">
-        <ChevronLeft size={22} aria-hidden />
-      </Link>
+      {backLink}
 
       <div className="photo-fallback recipe-photo" aria-hidden="true">
         <CookingPot size={48} strokeWidth={1.5} />
       </div>
 
-      <p className="recipe-meta">{[`${recipe.minutes} min`, ...recipe.tags].join(' · ')}</p>
+      <p className="recipe-meta">{recipeMeta(recipe)}</p>
       <h1 className="page-title">{recipe.title}</h1>
 
       <div className="stepper glass">
         <button
           type="button"
           aria-label="Færre porsjoner"
-          onClick={() => setServings((s) => Math.max(1, s - 1))}
+          onClick={() => setServings(Math.max(1, servings - 1))}
         >
           <Minus size={18} aria-hidden />
         </button>
@@ -38,7 +53,7 @@ export function RecipePage() {
         <button
           type="button"
           aria-label="Flere porsjoner"
-          onClick={() => setServings((s) => Math.min(20, s + 1))}
+          onClick={() => setServings(Math.min(20, servings + 1))}
         >
           <Plus size={18} aria-hidden />
         </button>
@@ -47,18 +62,21 @@ export function RecipePage() {
       <h2 className="section-title">Ingredienser</h2>
       <ul className="ingredients">
         {recipe.ingredients.map((ingredient) => (
-          <li key={ingredient.name}>
+          <li key={ingredient.id}>
             <span className="amount">
               {ingredient.quantity === null
                 ? ''
                 : formatAmount(
-                    ingredient.scalable === false
+                    !ingredient.scalable
                       ? ingredient.quantity
                       : scaleQuantity(ingredient.quantity, recipe.servings, servings),
                     ingredient.unit,
                   )}
             </span>
-            <span>{ingredient.name}</span>
+            <span>
+              {ingredient.name}
+              {ingredient.note && <span className="note">, {ingredient.note}</span>}
+            </span>
           </li>
         ))}
       </ul>
