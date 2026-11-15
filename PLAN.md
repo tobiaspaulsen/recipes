@@ -29,7 +29,7 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 ## Data model (Supabase)
 
 - `recipes` — id, title, language (`no`/`en`), servings (base), source_url, image_path, tags `text[]`, notes, prep/cook time, created_at, updated_at
-- `ingredients` — id, recipe_id, position, section (optional heading, e.g. "Saus"), quantity `numeric null`, unit `text null`, name (in the recipe's original language, e.g. "onions"), note ("sliced", "finhakket"), scalable `bool` (false for "salt etter smak")
+- `ingredients` — id, recipe_id, position, section (optional heading, e.g. "Saus"), quantity `numeric null`, unit `text null`, name (in the recipe's original language, e.g. "onions"), note ("sliced", "finhakket"). Every amount scales; there is no fixed-amount flag (dropped 2026-11-15)
 - `steps` — id, recipe_id, position, text
 - `shopping_items` — id, name (free text, amount included), recipe_id `null` (where it came from; column added with add-from-recipe), checked, created_at, checked_at
 
@@ -43,7 +43,7 @@ A phone-first recipe app for our household (me + partner) to store dinner recipe
 - Volume stays volume (cup flour → dl, not grams) — no per-ingredient density table.
 
 ### Scaling (`src/lib/scale.ts`)
-- `factor = desiredServings / recipe.servings`, applied to `quantity` of scalable ingredients only.
+- `factor = desiredServings / recipe.servings`, applied to every `quantity`; ingredients without one ("salt etter smak") are left as they are.
 - Smart rounding: whole items (`stk`, `fedd`, `boks`) round to nearest 0.5/1; small spoon amounts shown as fractions (½, ¼); large amounts promote units (1000 g → 1 kg, 10 dl → 1 l, 15 ml ↔ 1 ss where sensible).
 - Display with Norwegian number formatting (comma decimal).
 

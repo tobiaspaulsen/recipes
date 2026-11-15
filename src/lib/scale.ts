@@ -39,8 +39,7 @@ export function formatAmount(quantity: number, unit: string | null) {
 
 export function ingredientAmount(ingredient: Ingredient, fromServings: number, toServings: number) {
   if (ingredient.quantity === null) return ''
-  const quantity = ingredient.scalable ? scaleQuantity(ingredient.quantity, fromServings, toServings) : ingredient.quantity
-  return formatAmount(quantity, ingredient.unit)
+  return formatAmount(scaleQuantity(ingredient.quantity, fromServings, toServings), ingredient.unit)
 }
 
 export const UNITS = ['g', 'kg', 'dl', 'l', 'ss', 'ts', 'krm', 'stk', 'fedd', 'boks', 'pakke', 'beger', 'klype', 'neve']

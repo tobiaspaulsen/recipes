@@ -6,19 +6,19 @@ with r as (
   returning id
 ),
 i as (
-  insert into public.ingredients (recipe_id, position, quantity, unit, name, note, scalable)
+  insert into public.ingredients (recipe_id, position, quantity, unit, name, note)
   select r.id, v.* from r, (values
-    (1, 600::numeric, 'g', 'chicken thighs', 'boneless', true),
-    (2, 2, 'stk', 'onions', 'sliced', true),
-    (3, 3, 'fedd', 'garlic', 'crushed', true),
-    (4, 1, 'ss', 'fresh ginger', 'grated', true),
-    (5, 2, 'ss', 'curry paste', null, true),
-    (6, 1, 'boks', 'coconut milk', '400 ml', true),
-    (7, 1, 'boks', 'chopped tomatoes', null, true),
-    (8, 1, 'ts', 'garam masala', null, true),
-    (9, 4, 'dl', 'basmati rice', null, true),
-    (10, null, null, 'salt', 'to taste', false)
-  ) as v(position, quantity, unit, name, note, scalable)
+    (1, 600::numeric, 'g', 'chicken thighs', 'boneless'),
+    (2, 2, 'stk', 'onions', 'sliced'),
+    (3, 3, 'fedd', 'garlic', 'crushed'),
+    (4, 1, 'ss', 'fresh ginger', 'grated'),
+    (5, 2, 'ss', 'curry paste', null),
+    (6, 1, 'boks', 'coconut milk', '400 ml'),
+    (7, 1, 'boks', 'chopped tomatoes', null),
+    (8, 1, 'ts', 'garam masala', null),
+    (9, 4, 'dl', 'basmati rice', null),
+    (10, null, null, 'salt', 'to taste')
+  ) as v(position, quantity, unit, name, note)
 )
 insert into public.steps (recipe_id, position, text)
 select r.id, v.* from r, (values
@@ -34,16 +34,16 @@ with r as (
   returning id
 ),
 i as (
-  insert into public.ingredients (recipe_id, position, quantity, unit, name, note, scalable)
+  insert into public.ingredients (recipe_id, position, quantity, unit, name, note)
   select r.id, v.* from r, (values
-    (1, 400::numeric, 'g', 'kjøttdeig', null, true),
-    (2, 1, 'pakke', 'tacokrydder', null, true),
-    (3, 1, 'pakke', 'tortillalefser', null, true),
-    (4, 1, 'beger', 'rømme', null, true),
-    (5, 2, 'stk', 'tomater', null, true),
-    (6, 1, 'stk', 'agurk', null, true),
-    (7, 150, 'g', 'revet ost', null, true)
-  ) as v(position, quantity, unit, name, note, scalable)
+    (1, 400::numeric, 'g', 'kjøttdeig', null),
+    (2, 1, 'pakke', 'tacokrydder', null),
+    (3, 1, 'pakke', 'tortillalefser', null),
+    (4, 1, 'beger', 'rømme', null),
+    (5, 2, 'stk', 'tomater', null),
+    (6, 1, 'stk', 'agurk', null),
+    (7, 150, 'g', 'revet ost', null)
+  ) as v(position, quantity, unit, name, note)
 )
 insert into public.steps (recipe_id, position, text)
 select r.id, v.* from r, (values

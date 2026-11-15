@@ -831,28 +831,51 @@ textarea.editor-input {
 }
 .editor-ingredient-main {
   display: grid;
-  grid-template-columns: 72px 68px minmax(0, 1fr) 44px;
+  grid-template-columns: 72px 68px minmax(0, 1fr);
   align-items: end;
   gap: 8px;
 }
 .editor-ingredient-extra {
-  margin-right: 52px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
 }
 .editor-ingredient-extra .editor-input {
   font-size: 15px;
 }
 .editor-steps li {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 44px;
+  grid-template-columns: 28px minmax(0, 1fr);
   align-items: start;
-  gap: 8px;
+  column-gap: 8px;
+}
+.editor-steps .editor-row-actions {
+  grid-column: 2;
+  justify-self: end;
 }
 .editor-steps .step-number {
   padding-top: 10px;
 }
-.editor-steps .delete-button,
-.editor-ingredient-main .delete-button {
+.editor-row-actions {
+  display: flex;
   margin-right: -10px;
+}
+.editor-row-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.editor-row-actions button:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 .add-row {
   gap: 6px;

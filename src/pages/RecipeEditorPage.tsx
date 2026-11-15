@@ -1,7 +1,8 @@
-import { Minus, Plus, Trash2, X } from 'lucide-react'
-import { useRef, useState, type FormEvent } from 'react'
+import { ChevronDown, ChevronUp, Minus, Plus, Trash2, X } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useConfirm } from '../components/ConfirmDialog'
+import { useFlip } from '../lib/motion'
 import { parseQuantity, UNITS } from '../lib/scale'
 import { createRecipe, deleteRecipe, updateRecipe, useRecipe, type Recipe } from '../lib/useRecipes'
 
@@ -12,8 +13,6 @@ type IngredientDraft = {
   unit: string
   name: string
   note: string
-  // Not editable here; kept so editing doesn't change it.
-  scalable: boolean
 }
 type StepDraft = { key: string; id?: string; text: string }
 
@@ -23,7 +22,6 @@ const newIngredient = (): IngredientDraft => ({
   unit: '',
   name: '',
   note: '',
-  scalable: true,
 })
 const newStep = (): StepDraft => ({ key: crypto.randomUUID(), text: '' })
 
@@ -42,6 +40,13 @@ function uniqueTags(text: string) {
     .split(',')
     .map((tag) => tag.trim())
     .filter((tag) => tag && !seen.has(tag.toLowerCase()) && seen.add(tag.toLowerCase()))
+}
+
+function moved<T>(list: T[], index: number, delta: number) {
+  const next = [...list]
+  const [item] = next.splice(index, 1)
+  next.splice(index + delta, 0, item)
+  return next
 }
 
 function growToFit(element: HTMLTextAreaElement | null) {
@@ -90,7 +95,6 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
           unit: i.unit ?? '',
           name: i.name,
           note: i.note ?? '',
-          scalable: i.scalable,
         }))
       : [newIngredient(), newIngredient(), newIngredient()],
   )
@@ -100,6 +104,15 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirm, confirmDialog] = useConfirm()
+  const ingredientsRef = useRef<HTMLUListElement>(null)
+  const stepsRef = useRef<HTMLOListElement>(null)
+  // False during the first layout pass, so the rows don't all fade in when the form opens.
+  const mounted = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+  }, [])
+  useFlip(ingredientsRef, mounted.current)
+  useFlip(stepsRef, mounted.current)
 
   const snapshot = JSON.stringify([title, servings, prep, cook, tags, ingredients, steps])
   const initialSnapshot = useRef(snapshot)
@@ -154,7 +167,6 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
         unit: i.unit || null,
         name: i.name.trim(),
         note: i.note.trim() || null,
-        scalable: i.scalable,
       })),
       steps: steps.filter((s) => s.text.trim()).map((s) => ({ id: s.id, text: s.text.trim() })),
     }
@@ -248,9 +260,9 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
         </div>
 
         <h2 className="section-title">Ingredienser</h2>
-        <ul className="editor-ingredients">
+        <ul className="editor-ingredients" ref={ingredientsRef}>
           {ingredients.map((ingredient, index) => (
-            <li key={ingredient.key}>
+            <li key={ingredient.key} data-flip-id={ingredient.key}>
               <div className="editor-ingredient-main">
                 <input
                   className="editor-input editor-quantity"
@@ -283,14 +295,6 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
                   onChange={(e) => updateIngredient(ingredient.key, { name: e.target.value })}
                   autoComplete="off"
                 />
-                <button
-                  type="button"
-                  className="delete-button"
-                  aria-label={`Fjern ingrediens ${index + 1}`}
-                  onClick={() => setIngredients((prev) => prev.filter((i) => i.key !== ingredient.key))}
-                >
-                  <Trash2 size={18} aria-hidden />
-                </button>
               </div>
               <div className="editor-ingredient-extra">
                 <input
@@ -300,6 +304,13 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
                   value={ingredient.note}
                   onChange={(e) => updateIngredient(ingredient.key, { note: e.target.value })}
                   autoComplete="off"
+                />
+                <RowActions
+                  label={`ingrediens ${index + 1}`}
+                  index={index}
+                  count={ingredients.length}
+                  onMove={(delta) => setIngredients((prev) => moved(prev, index, delta))}
+                  onRemove={() => setIngredients((prev) => prev.filter((i) => i.key !== ingredient.key))}
                 />
               </div>
             </li>
@@ -311,15 +322,15 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
         </button>
 
         <h2 className="section-title">Fremgangsmåte</h2>
-        <ol className="editor-steps">
+        <ol className="editor-steps" ref={stepsRef}>
           {steps.map((step, index) => (
-            <li key={step.key}>
+            <li key={step.key} data-flip-id={step.key}>
               <span className="step-number">{index + 1}</span>
               <textarea
                 className="editor-input"
                 aria-label={`Steg ${index + 1}`}
                 placeholder="Beskriv steget"
-                rows={2}
+                rows={1}
                 value={step.text}
                 ref={growToFit}
                 onChange={(e) => {
@@ -327,14 +338,13 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
                   growToFit(e.target)
                 }}
               />
-              <button
-                type="button"
-                className="delete-button"
-                aria-label={`Fjern steg ${index + 1}`}
-                onClick={() => setSteps((prev) => prev.filter((s) => s.key !== step.key))}
-              >
-                <Trash2 size={18} aria-hidden />
-              </button>
+              <RowActions
+                label={`steg ${index + 1}`}
+                index={index}
+                count={steps.length}
+                onMove={(delta) => setSteps((prev) => moved(prev, index, delta))}
+                onRemove={() => setSteps((prev) => prev.filter((s) => s.key !== step.key))}
+              />
             </li>
           ))}
         </ol>
@@ -352,5 +362,29 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
       </form>
       {confirmDialog}
     </>
+  )
+}
+
+type RowActionsProps = {
+  label: string
+  index: number
+  count: number
+  onMove: (delta: number) => void
+  onRemove: () => void
+}
+
+function RowActions({ label, index, count, onMove, onRemove }: RowActionsProps) {
+  return (
+    <div className="editor-row-actions">
+      <button type="button" aria-label={`Flytt ${label} opp`} disabled={index === 0} onClick={() => onMove(-1)}>
+        <ChevronUp size={20} aria-hidden />
+      </button>
+      <button type="button" aria-label={`Flytt ${label} ned`} disabled={index === count - 1} onClick={() => onMove(1)}>
+        <ChevronDown size={20} aria-hidden />
+      </button>
+      <button type="button" aria-label={`Fjern ${label}`} onClick={onRemove}>
+        <Trash2 size={18} aria-hidden />
+      </button>
+    </div>
   )
 }

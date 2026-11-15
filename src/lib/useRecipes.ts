@@ -7,7 +7,6 @@ export type Ingredient = {
   unit: string | null
   name: string
   note: string | null
-  scalable: boolean
 }
 
 export type RecipeSummary = {
@@ -85,7 +84,7 @@ export function useRecipe(id: string) {
     supabase
       .from('recipes')
       .select(
-        'id, title, tags, prep_minutes, cook_minutes, servings, ingredients (id, quantity, unit, name, note, scalable), steps (id, text)',
+        'id, title, tags, prep_minutes, cook_minutes, servings, ingredients (id, quantity, unit, name, note), steps (id, text)',
       )
       .eq('id', id)
       .order('position', { referencedTable: 'ingredients' })
