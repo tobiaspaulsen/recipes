@@ -982,3 +982,25 @@ textarea.editor-input {
   color: var(--muted);
   font-size: 14px;
 }
+
+.ingredient-section {
+  margin: 20px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recipe-notes {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+.editor-section {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

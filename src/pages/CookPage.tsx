@@ -79,6 +79,13 @@ export function CookPage() {
           )
         })}
       </ol>
+
+      {recipe.notes && (
+        <>
+          <h2 className="section-title">Notater</h2>
+          <p className="recipe-notes">{recipe.notes}</p>
+        </>
+      )}
     </article>
   )
 }

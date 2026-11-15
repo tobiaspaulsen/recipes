@@ -142,6 +142,13 @@ export function RecipePage() {
         ))}
       </ol>
 
+      {recipe.notes && (
+        <>
+          <h2 className="section-title">Notater</h2>
+          <p className="recipe-notes">{recipe.notes}</p>
+        </>
+      )}
+
       {added !== null && (
         <div className="toast glass" role="status">
           <span>La til {countText(added)}</span>

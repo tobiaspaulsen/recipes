@@ -8,6 +8,7 @@ export type Ingredient = {
   unit: string | null
   name: string
   note: string | null
+  section: string | null
 }
 
 export type RecipeSummary = {
@@ -24,6 +25,7 @@ export type Recipe = RecipeSummary & {
   servings: number
   prepMinutes: number | null
   cookMinutes: number | null
+  notes: string | null
   ingredients: Ingredient[]
   steps: Step[]
 }
@@ -39,6 +41,7 @@ type SummaryRow = {
 
 type RecipeRow = SummaryRow & {
   servings: number
+  notes: string | null
   ingredients: Ingredient[]
   steps: Step[]
 }
@@ -88,7 +91,7 @@ export function useRecipe(id: string) {
     supabase
       .from('recipes')
       .select(
-        'id, title, tags, prep_minutes, cook_minutes, image_path, servings, ingredients (id, quantity, unit, name, note), steps (id, text)',
+        'id, title, tags, prep_minutes, cook_minutes, image_path, servings, notes, ingredients (id, quantity, unit, name, note, section), steps (id, text)',
       )
       .eq('id', id)
       .order('position', { referencedTable: 'ingredients' })
@@ -104,6 +107,7 @@ export function useRecipe(id: string) {
           servings: data.servings,
           prepMinutes: data.prep_minutes,
           cookMinutes: data.cook_minutes,
+          notes: data.notes,
           ingredients: data.ingredients,
           steps: data.steps,
         }
@@ -129,6 +133,7 @@ export type RecipeInput = {
   cookMinutes: number | null
   tags: string[]
   imagePath: string | null
+  notes: string | null
   // Rows without an id are new.
   ingredients: (Omit<Ingredient, 'id'> & { id?: string })[]
   steps: { id?: string; text: string }[]
@@ -141,6 +146,7 @@ const recipeRow = (recipe: RecipeInput) => ({
   cook_minutes: recipe.cookMinutes,
   tags: recipe.tags,
   image_path: recipe.imagePath,
+  notes: recipe.notes,
 })
 
 const ingredientRows = (recipeId: string, recipe: RecipeInput) =>

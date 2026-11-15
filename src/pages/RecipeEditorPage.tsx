@@ -14,6 +14,8 @@ type IngredientDraft = {
   unit: string
   name: string
   note: string
+  // Not editable here yet; kept so saving doesn't drop the sub-heading.
+  section: string | null
 }
 type StepDraft = { key: string; id?: string; text: string }
 type PhotoDraft = { kind: 'saved'; path: string } | { kind: 'new'; photo: PreparedPhoto } | null
@@ -24,6 +26,7 @@ const newIngredient = (): IngredientDraft => ({
   unit: '',
   name: '',
   note: '',
+  section: null,
 })
 const newStep = (): StepDraft => ({ key: crypto.randomUUID(), text: '' })
 
@@ -88,6 +91,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
   const [prep, setPrep] = useState(recipe?.prepMinutes?.toString() ?? '')
   const [cook, setCook] = useState(recipe?.cookMinutes?.toString() ?? '')
   const [tags, setTags] = useState(recipe?.tags.join(', ') ?? '')
+  const [notes, setNotes] = useState(recipe?.notes ?? '')
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(() =>
     recipe?.ingredients.length
       ? recipe.ingredients.map((i) => ({
@@ -97,6 +101,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
           unit: i.unit ?? '',
           name: i.name,
           note: i.note ?? '',
+          section: i.section,
         }))
       : [newIngredient(), newIngredient(), newIngredient()],
   )
@@ -119,7 +124,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
   useFlip(stepsRef, mounted.current)
 
   const photoSrc = photo?.kind === 'new' ? photo.photo.preview : photo ? photoUrl(photo.path, 'small') : null
-  const snapshot = JSON.stringify([title, servings, prep, cook, tags, ingredients, steps, photo])
+  const snapshot = JSON.stringify([title, servings, prep, cook, tags, notes, ingredients, steps, photo])
   const initialSnapshot = useRef(snapshot)
   const dirty = snapshot !== initialSnapshot.current
 
@@ -179,12 +184,14 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
       cookMinutes,
       tags: uniqueTags(tags),
       imagePath: photo?.kind === 'saved' ? photo.path : null,
+      notes: notes.trim() || null,
       ingredients: parsed.map((i) => ({
         id: i.id,
         quantity: i.amount ?? null,
         unit: i.unit || null,
         name: i.name.trim(),
         note: i.note.trim() || null,
+        section: i.section,
       })),
       steps: steps.filter((s) => s.text.trim()).map((s) => ({ id: s.id, text: s.text.trim() })),
     }
@@ -316,6 +323,9 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
         <ul className="editor-ingredients" ref={ingredientsRef}>
           {ingredients.map((ingredient, index) => (
             <li key={ingredient.key} data-flip-id={ingredient.key}>
+              {ingredient.section && ingredient.section !== ingredients[index - 1]?.section && (
+                <p className="editor-section">{ingredient.section}</p>
+              )}
               <div className="editor-ingredient-main">
                 <input
                   className="editor-input editor-quantity"
@@ -405,6 +415,20 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
           <Plus size={18} aria-hidden />
           Legg til steg
         </button>
+
+        <h2 className="section-title">Notater</h2>
+        <textarea
+          className="editor-input"
+          aria-label="Notater"
+          placeholder="Tips, bytter eller hva som funket sist"
+          rows={1}
+          value={notes}
+          ref={growToFit}
+          onChange={(e) => {
+            setNotes(e.target.value)
+            growToFit(e.target)
+          }}
+        />
 
         {recipe && (
           <button type="button" className="text-button delete-recipe" onClick={remove} disabled={busy}>
