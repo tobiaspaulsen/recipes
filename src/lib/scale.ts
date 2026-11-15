@@ -1,3 +1,5 @@
+import type { Ingredient } from './useRecipes'
+
 const FRACTIONS: Record<string, string> = { '0.25': '¼', '0.5': '½', '0.75': '¾' }
 const COUNTED_UNITS = new Set(['stk', 'fedd', 'boks', 'pakke', 'beger'])
 
@@ -30,4 +32,10 @@ export function formatAmount(quantity: number, unit: string | null) {
   const counted = unit === null || COUNTED_UNITS.has(unit)
   const amount = withFraction(roundTo(quantity, counted ? 0.5 : 0.25))
   return unit ? `${amount} ${unit}` : amount
+}
+
+export function ingredientAmount(ingredient: Ingredient, fromServings: number, toServings: number) {
+  if (ingredient.quantity === null) return ''
+  const quantity = ingredient.scalable ? scaleQuantity(ingredient.quantity, fromServings, toServings) : ingredient.quantity
+  return formatAmount(quantity, ingredient.unit)
 }

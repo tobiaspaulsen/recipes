@@ -422,6 +422,8 @@ body {
 
 .section-title {
   margin: 36px 0 8px;
+  /* Keeps the heading clear of the floating back button when scrolled to. */
+  scroll-margin-top: 72px;
   font-family: var(--font-serif);
   font-weight: 500;
   font-size: 24px;
@@ -581,7 +583,7 @@ body {
 .ingredients .note {
   color: var(--muted);
 }
-.ingredients[data-selecting] li {
+.ingredients[data-checkable] li {
   display: block;
   padding: 0;
 }
@@ -599,8 +601,43 @@ body {
   text-align: left;
   cursor: pointer;
 }
-.ingredient-toggle[aria-checked='false'] {
+.choose-ingredients .ingredient-toggle[aria-checked='false'] {
   color: var(--muted);
+}
+
+.cook-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.cook-title {
+  margin: 12px 0 4px;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 32px;
+}
+.cook-ingredients {
+  font-size: 19px;
+}
+.cook-ingredients .ingredient-toggle[aria-checked='true'] {
+  color: var(--muted);
+}
+.cook-ingredients .ingredient-toggle[aria-checked='true'] > span:last-child {
+  text-decoration: line-through;
+}
+.cook-step {
+  margin: 24px 0 0;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  line-height: 1.4;
+}
+.cook-bar {
+  bottom: var(--tabbar-bottom);
 }
 .steps {
   display: flex;

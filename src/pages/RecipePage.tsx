@@ -1,23 +1,22 @@
-import { Check, ChevronLeft, CookingPot, Minus, Plus } from 'lucide-react'
+import { ChevronLeft, CookingPot, Minus, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
-import { formatAmount, scaleQuantity } from '../lib/scale'
-import { recipeMeta, useRecipe, type Ingredient } from '../lib/useRecipes'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { IngredientList } from '../components/IngredientList'
+import { ingredientAmount } from '../lib/scale'
+import { recipeMeta, useRecipe } from '../lib/useRecipes'
 import { useShoppingList } from '../lib/useShoppingList'
-
-function amountText(ingredient: Ingredient, fromServings: number, toServings: number) {
-  if (ingredient.quantity === null) return ''
-  const quantity = ingredient.scalable ? scaleQuantity(ingredient.quantity, fromServings, toServings) : ingredient.quantity
-  return formatAmount(quantity, ingredient.unit)
-}
 
 const countText = (count: number) => `${count} ${count === 1 ? 'vare' : 'varer'}`
 
+// Survives leaving the page, so closing cooking mode comes back to the same servings.
+const servingsByRecipe = new Map<string, number>()
+
 export function RecipePage() {
   const { id = '' } = useParams()
+  const navigate = useNavigate()
   const { recipe, error } = useRecipe(id)
   const { add } = useShoppingList()
-  const [chosenServings, setServings] = useState<number | null>(null)
+  const [chosenServings, setChosenServings] = useState<number | undefined>(() => servingsByRecipe.get(id))
   const [selecting, setSelecting] = useState(false)
   const [skipped, setSkipped] = useState<Set<string>>(new Set())
   const [added, setAdded] = useState<number | null>(null)
@@ -49,6 +48,11 @@ export function RecipePage() {
   const servings = chosenServings ?? recipe.servings
   const chosen = recipe.ingredients.filter((ingredient) => !skipped.has(ingredient.id))
 
+  function setServings(next: number) {
+    servingsByRecipe.set(id, next)
+    setChosenServings(next)
+  }
+
   function startSelecting() {
     setSkipped(new Set())
     setAdded(null)
@@ -67,7 +71,7 @@ export function RecipePage() {
   function addChosen() {
     if (!recipe) return
     const names = chosen.map((ingredient) =>
-      [amountText(ingredient, recipe.servings, servings), ingredient.name].filter(Boolean).join(' '),
+      [ingredientAmount(ingredient, recipe.servings, servings), ingredient.name].filter(Boolean).join(' '),
     )
     add(names, recipe.id)
     setSelecting(false)
@@ -108,42 +112,15 @@ export function RecipePage() {
       <h2 className="section-title" ref={ingredientsRef}>
         Ingredienser
       </h2>
-      <ul className="ingredients" data-selecting={selecting || undefined}>
-        {recipe.ingredients.map((ingredient) => {
-          const amount = <span className="amount">{amountText(ingredient, recipe.servings, servings)}</span>
-          const name = (
-            <span>
-              {ingredient.name}
-              {ingredient.note && <span className="note">, {ingredient.note}</span>}
-            </span>
-          )
-          const selected = !skipped.has(ingredient.id)
-          return (
-            <li key={ingredient.id}>
-              {selecting ? (
-                <button
-                  type="button"
-                  className="ingredient-toggle"
-                  role="checkbox"
-                  aria-checked={selected}
-                  onClick={() => toggleIngredient(ingredient.id)}
-                >
-                  <span className="check" data-on={selected} aria-hidden="true">
-                    {selected && <Check size={14} strokeWidth={3} />}
-                  </span>
-                  {amount}
-                  {name}
-                </button>
-              ) : (
-                <>
-                  {amount}
-                  {name}
-                </>
-              )}
-            </li>
-          )
-        })}
-      </ul>
+      <IngredientList
+        className="choose-ingredients"
+        ingredients={recipe.ingredients}
+        fromServings={recipe.servings}
+        toServings={servings}
+        checkable={
+          selecting ? { isChecked: (ingredientId) => !skipped.has(ingredientId), onToggle: toggleIngredient } : undefined
+        }
+      />
 
       <h2 className="section-title">Fremgangsmåte</h2>
       <ol className="steps">
@@ -180,7 +157,7 @@ export function RecipePage() {
             <button type="button" className="primary" onClick={startSelecting}>
               Legg i handleliste
             </button>
-            <button type="button" disabled>
+            <button type="button" onClick={() => navigate(`/oppskrifter/${recipe.id}/lag?porsjoner=${servings}`)}>
               Start matlaging
             </button>
           </>

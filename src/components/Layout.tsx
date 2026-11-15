@@ -1,10 +1,11 @@
-import { Outlet, ScrollRestoration } from 'react-router-dom'
+import { Outlet, ScrollRestoration, useMatches } from 'react-router-dom'
 import { useSession } from '../lib/useSession'
 import { LoginForm } from './LoginForm'
 import { TabBar } from './TabBar'
 
 export function Layout() {
   const { signedIn, loading } = useSession()
+  const fullscreen = useMatches().some((match) => (match.handle as { fullscreen?: boolean } | undefined)?.fullscreen)
 
   if (loading) return null
 
@@ -23,7 +24,7 @@ export function Layout() {
       <main className="page">
         <Outlet />
       </main>
-      <TabBar />
+      {!fullscreen && <TabBar />}
       <ScrollRestoration />
     </>
   )
