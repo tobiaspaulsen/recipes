@@ -129,6 +129,13 @@ export function recipeMeta({ minutes, tags }: Pick<RecipeSummary, 'minutes' | 't
   return [...(minutes === null ? [] : [`${minutes} min`]), ...tags].join(' · ')
 }
 
+// Most used first, so the main categories come before one-off tags.
+export function tagsByUse(recipes: RecipeSummary[]) {
+  const counts = new Map<string, number>()
+  for (const recipe of recipes) for (const tag of recipe.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1)
+  return [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)! || a.localeCompare(b, 'nb'))
+}
+
 export type RecipeInput = {
   title: string
   servings: number

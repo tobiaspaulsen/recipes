@@ -1218,3 +1218,18 @@ textarea.editor-input {
   color: var(--muted);
   font-size: 15px;
 }
+
+.tag-picker {
+  flex-wrap: wrap;
+  margin: 2px 0 0;
+  padding: 0;
+  overflow: visible;
+}
+.tag-new span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-style: dashed;
+  border-color: var(--accent);
+  color: var(--accent);
+}

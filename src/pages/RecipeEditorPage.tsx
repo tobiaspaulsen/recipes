@@ -2,6 +2,7 @@ import { Camera, ChevronDown, ChevronUp, Minus, Plus, Trash2, X } from 'lucide-r
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useConfirm } from '../components/ConfirmDialog'
+import { TagPicker } from '../components/TagPicker'
 import { useFlip } from '../lib/motion'
 import { photoUrl, preparePhoto, removePhoto, uploadPhoto, type PreparedPhoto } from '../lib/photos'
 import { parseQuantity, UNITS } from '../lib/scale'
@@ -37,14 +38,6 @@ function parseMinutes(text: string) {
   const value = text.trim()
   if (!value) return null
   return /^\d+$/.test(value) ? Number(value) : undefined
-}
-
-function uniqueTags(text: string) {
-  const seen = new Set<string>()
-  return text
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter((tag) => tag && !seen.has(tag.toLowerCase()) && seen.add(tag.toLowerCase()))
 }
 
 function moved<T>(list: T[], index: number, delta: number) {
@@ -90,7 +83,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
   const [servings, setServings] = useState(recipe?.servings ?? 4)
   const [prep, setPrep] = useState(recipe?.prepMinutes?.toString() ?? '')
   const [cook, setCook] = useState(recipe?.cookMinutes?.toString() ?? '')
-  const [tags, setTags] = useState(recipe?.tags.join(', ') ?? '')
+  const [tags, setTags] = useState<string[]>(recipe?.tags ?? [])
   const [notes, setNotes] = useState(recipe?.notes ?? '')
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(() =>
     recipe?.ingredients.length
@@ -182,7 +175,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
       servings,
       prepMinutes,
       cookMinutes,
-      tags: uniqueTags(tags),
+      tags,
       imagePath: photo?.kind === 'saved' ? photo.path : null,
       notes: notes.trim() || null,
       ingredients: parsed.map((i) => ({
@@ -308,16 +301,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
           </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="tags">Tagger</label>
-          <input
-            id="tags"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="Kylling, Hverdag"
-            autoComplete="off"
-          />
-        </div>
+        <TagPicker value={tags} onChange={setTags} />
 
         <h2 className="section-title">Ingredienser</h2>
         <ul className="editor-ingredients" ref={ingredientsRef}>
