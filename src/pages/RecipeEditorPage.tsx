@@ -284,7 +284,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
 
         <div className="field">
           <span className="field-label">Porsjoner</span>
-          <div className="stepper glass">
+          <div className="stepper glass-static">
             <button type="button" aria-label="Færre porsjoner" onClick={() => setServings((s) => Math.max(1, s - 1))}>
               <Minus size={18} aria-hidden />
             </button>

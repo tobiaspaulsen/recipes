@@ -1,5 +1,6 @@
 import { Check, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { DinnerSuggestions } from '../components/DinnerSuggestions'
 import { fadeOut, useFlip } from '../lib/motion'
 import { useKeyboardInset } from '../lib/useKeyboardInset'
 import { PULL_THRESHOLD, usePullToRefresh } from '../lib/usePullToRefresh'
@@ -98,6 +99,8 @@ export function ShoppingListPage() {
           {pendingCount > 0 ? 'Ikke på nett. Endringene sendes når du er tilbake.' : 'Ikke på nett. Viser sist lagrede liste.'}
         </p>
       )}
+
+      <DinnerSuggestions onAdd={add} />
 
       {!loading && items.length === 0 && (
         <div className="empty">

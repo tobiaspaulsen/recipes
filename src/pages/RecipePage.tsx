@@ -1,9 +1,10 @@
-import { ChevronLeft, CookingPot, Minus, Pencil, Plus } from 'lucide-react'
+import { Check, ChevronLeft, CookingPot, Minus, Pencil, Plus, Utensils } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { IngredientList } from '../components/IngredientList'
 import { photoUrl } from '../lib/photos'
-import { ingredientAmount } from '../lib/scale'
+import { shoppingName } from '../lib/scale'
+import { useDinnerSuggestions } from '../lib/useDinnerSuggestions'
 import { recipeMeta, useRecipe } from '../lib/useRecipes'
 import { useShoppingList } from '../lib/useShoppingList'
 
@@ -17,6 +18,7 @@ export function RecipePage() {
   const navigate = useNavigate()
   const { recipe, error } = useRecipe(id)
   const { add } = useShoppingList()
+  const { suggestions, error: suggestError, suggest, withdraw } = useDinnerSuggestions()
   const [chosenServings, setChosenServings] = useState<number | undefined>(() => servingsByRecipe.get(id))
   const [selecting, setSelecting] = useState(false)
   const [skipped, setSkipped] = useState<Set<string>>(new Set())
@@ -47,6 +49,7 @@ export function RecipePage() {
   }
 
   const servings = chosenServings ?? recipe.servings
+  const suggested = suggestions?.some((suggestion) => suggestion.recipeId === recipe.id)
   const chosen = recipe.ingredients.filter((ingredient) => !skipped.has(ingredient.id))
 
   function setServings(next: number) {
@@ -71,9 +74,7 @@ export function RecipePage() {
 
   function addChosen() {
     if (!recipe) return
-    const names = chosen.map((ingredient) =>
-      [ingredientAmount(ingredient, recipe.servings, servings), ingredient.name].filter(Boolean).join(' '),
-    )
+    const names = chosen.map((ingredient) => shoppingName(ingredient, recipe.servings, servings))
     add(names, recipe.id)
     setSelecting(false)
     setAdded(names.length)
@@ -99,7 +100,32 @@ export function RecipePage() {
       <p className="recipe-meta">{recipeMeta(recipe)}</p>
       <h1 className="page-title">{recipe.title}</h1>
 
-      <div className="stepper glass">
+      <div className="suggest-row">
+        {suggested ? (
+          <>
+            <span className="suggest-status">
+              <Check size={16} aria-hidden />
+              Foreslått til middag
+            </span>
+            <button type="button" className="text-button" onClick={() => withdraw(recipe.id)}>
+              Trekk tilbake
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className="pill-button glass-static"
+            disabled={!suggestions}
+            onClick={() => suggest(recipe.id)}
+          >
+            <Utensils size={16} aria-hidden />
+            Foreslå til middag
+          </button>
+        )}
+      </div>
+      {suggestError && <p className="error">{suggestError}</p>}
+
+      <div className="stepper glass-static">
         <button
           type="button"
           aria-label="Færre porsjoner"

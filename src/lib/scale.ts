@@ -42,6 +42,10 @@ export function ingredientAmount(ingredient: Ingredient, fromServings: number, t
   return formatAmount(scaleQuantity(ingredient.quantity, fromServings, toServings), ingredient.unit)
 }
 
+export function shoppingName(ingredient: Ingredient, fromServings: number, toServings: number) {
+  return [ingredientAmount(ingredient, fromServings, toServings), ingredient.name].filter(Boolean).join(' ')
+}
+
 export const UNITS = ['g', 'kg', 'dl', 'l', 'ss', 'ts', 'krm', 'stk', 'fedd', 'boks', 'pakke', 'beger', 'klype', 'neve']
 
 const UNICODE_FRACTIONS: Record<string, number> = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3 }

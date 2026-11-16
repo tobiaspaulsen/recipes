@@ -57,7 +57,7 @@ export function RecipesPage() {
     <>
       <div className="page-header">
         <h1 className="page-title">Oppskrifter</h1>
-        <Link to="/oppskrifter/ny" className="icon-button glass" aria-label="Ny oppskrift">
+        <Link to="/oppskrifter/ny" className="icon-button glass-static" aria-label="Ny oppskrift">
           <Plus size={22} aria-hidden />
         </Link>
       </div>

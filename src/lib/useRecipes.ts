@@ -125,7 +125,7 @@ export function useRecipe(id: string) {
   return { recipe, error }
 }
 
-export function recipeMeta({ minutes, tags }: RecipeSummary) {
+export function recipeMeta({ minutes, tags }: Pick<RecipeSummary, 'minutes' | 'tags'>) {
   return [...(minutes === null ? [] : [`${minutes} min`]), ...tags].join(' · ')
 }
 

@@ -9,6 +9,8 @@
   --pill: rgba(42, 33, 27, 0.07);
   --glass-fill: linear-gradient(180deg, rgba(255, 252, 247, 0.22), rgba(255, 248, 240, 0.08));
   --glass-border: rgba(255, 255, 255, 0.75);
+  /* What .glass looks like over the plain page background, worked out from its fill and saturate(180%). */
+  --glass-static-fill: linear-gradient(180deg, #faf2e4, #f9f0df);
   /* Outer shadows reach at most ~8px below: further and iOS cuts them off at the viewport edge (seam). */
   --glass-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.95), inset 0 -1px 0.5px rgba(255, 255, 255, 0.35),
     0 -6px 20px -8px rgba(70, 45, 25, 0.22), 0 4px 14px -10px rgba(70, 45, 25, 0.3);
@@ -36,6 +38,7 @@
     --pill: rgba(255, 240, 225, 0.12);
     --glass-fill: linear-gradient(180deg, rgba(255, 240, 225, 0.05), rgba(255, 240, 225, 0));
     --glass-border: rgba(255, 240, 225, 0.16);
+    --glass-static-fill: linear-gradient(180deg, #2c231b, #211811);
     --glass-shadow: inset 0 1px 0.5px rgba(255, 240, 225, 0.5), inset 0 -1px 0.5px rgba(255, 240, 225, 0.12),
       0 -6px 20px -8px rgba(0, 0, 0, 0.55), 0 4px 14px -10px rgba(0, 0, 0, 0.6);
   }
@@ -685,6 +688,13 @@ body {
   box-shadow: var(--glass-shadow);
 }
 
+/* For glass that sits on the page rather than over scrolling content: Chrome renders backdrop-filter grainy. */
+.glass-static {
+  background: var(--glass-static-fill);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
 .tabbar {
   position: fixed;
   z-index: 10;
@@ -1089,4 +1099,122 @@ textarea.editor-input {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
+}
+
+.dinner {
+  margin-top: 20px;
+  padding: 6px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+.dinner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-right: -10px;
+}
+.dinner-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dinner-skip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.dinner-recipe {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.dinner-recipe img,
+.dinner-recipe .photo-fallback {
+  display: flex;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+.dinner-recipe > svg {
+  color: var(--muted);
+}
+.dinner-title {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1.2;
+}
+.dinner-recipe .recipe-meta {
+  display: block;
+  margin: 2px 0 0;
+}
+.dinner-servings {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.dinner-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 16px;
+}
+.dinner-actions .text-button {
+  font-size: 15px;
+}
+
+.suggest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  margin-top: 16px;
+}
+.pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.pill-button svg {
+  color: var(--accent);
+}
+.pill-button[data-primary] {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--tint-fill);
+  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.5);
+  color: var(--on-accent);
+}
+.pill-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.suggest-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 15px;
 }
