@@ -2,7 +2,7 @@ import { CookingPot, Plus, Search, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { photoUrl } from '../lib/photos'
-import { recipeMeta, tagsByUse, useRecipes, type RecipeSummary } from '../lib/useRecipes'
+import { recipeMeta, useRecipes, type RecipeSummary } from '../lib/useRecipes'
 
 // Kept between visits, so going back from a recipe shows the same results.
 let lastQuery = ''
@@ -31,7 +31,9 @@ export function RecipesPage() {
   const { recipes, error } = useRecipes()
   const [query, setQuery] = useState(lastQuery)
   const [selectedTags, setSelectedTags] = useState(lastTags)
-  const allTags = recipes ? tagsByUse(recipes) : []
+  const allTags = recipes
+    ? [...new Set(recipes.flatMap((recipe) => recipe.tags))].sort((a, b) => a.localeCompare(b, 'nb'))
+    : []
   const results =
     recipes && search(recipes, query).filter((recipe) => selectedTags.every((tag) => recipe.tags.includes(tag)))
 
