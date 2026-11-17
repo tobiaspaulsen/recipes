@@ -8,7 +8,8 @@ export default defineConfig({
     ...minimal2023Preset,
     transparent: { ...minimal2023Preset.transparent, padding: 0 },
     apple: { sizes: [180], padding: 0, resizeOptions: { background: aubergine } },
-    maskable: { sizes: [512], padding: 0.3, resizeOptions: { background: aubergine } },
+    // Padding would frame the gradient in flat colour; the glyph is already inside the safe zone.
+    maskable: { sizes: [512], padding: 0, resizeOptions: { background: aubergine } },
   },
   images: ['public/logo.svg'],
 })
