@@ -1006,6 +1006,38 @@ textarea.editor-input {
   line-height: 1.5;
   white-space: pre-line;
 }
+.recipe-source {
+  margin: 24px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.recipe-source a {
+  color: var(--accent);
+}
+.editor-hint {
+  margin: -8px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.new-recipe {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.new-recipe .page-title {
+  margin-top: 24px;
+}
+.new-recipe-or {
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.new-recipe-or .button-secondary {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
 .editor-section {
   margin: 0 0 4px;
   font-size: 13px;

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { CookPage } from './pages/CookPage'
+import { NewRecipePage } from './pages/NewRecipePage'
 import { RecipeEditorPage } from './pages/RecipeEditorPage'
 import { RecipePage } from './pages/RecipePage'
 import { RecipesPage } from './pages/RecipesPage'
@@ -13,7 +14,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <ShoppingListPage /> },
       { path: 'oppskrifter', element: <RecipesPage /> },
-      { path: 'oppskrifter/ny', element: <RecipeEditorPage />, handle: { fullscreen: true } },
+      { path: 'oppskrifter/ny', element: <NewRecipePage />, handle: { fullscreen: true } },
+      { path: 'oppskrifter/ny/skriv', element: <RecipeEditorPage />, handle: { fullscreen: true } },
       { path: 'oppskrifter/:id', element: <RecipePage /> },
       { path: 'oppskrifter/:id/lag', element: <CookPage />, handle: { fullscreen: true } },
       { path: 'oppskrifter/:id/rediger', element: <RecipeEditorPage />, handle: { fullscreen: true } },
