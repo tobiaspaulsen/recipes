@@ -2,6 +2,7 @@ import { Check, ChevronLeft, CookingPot, Minus, Pencil, Plus, Utensils } from 'l
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { IngredientList } from '../components/IngredientList'
+import { siteName } from '../lib/importRecipe'
 import { photoUrl } from '../lib/photos'
 import { shoppingName } from '../lib/scale'
 import { useDinnerSuggestions } from '../lib/useDinnerSuggestions'
@@ -173,6 +174,15 @@ export function RecipePage() {
           <h2 className="section-title">Notater</h2>
           <p className="recipe-notes">{recipe.notes}</p>
         </>
+      )}
+
+      {recipe.sourceUrl && (
+        <p className="recipe-source">
+          Kilde:{' '}
+          <a href={recipe.sourceUrl} target="_blank" rel="noreferrer">
+            {siteName(recipe.sourceUrl)}
+          </a>
+        </p>
       )}
 
       {added !== null && (

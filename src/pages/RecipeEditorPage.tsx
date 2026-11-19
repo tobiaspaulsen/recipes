@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useConfirm } from '../components/ConfirmDialog'
 import { TagPicker } from '../components/TagPicker'
+import { siteName, type RecipeDraft } from '../lib/importRecipe'
 import { useFlip } from '../lib/motion'
 import { photoUrl, preparePhoto, removePhoto, uploadPhoto, type PreparedPhoto } from '../lib/photos'
 import { parseQuantity, UNITS } from '../lib/scale'
@@ -21,15 +22,15 @@ type IngredientDraft = {
 type StepDraft = { key: string; id?: string; text: string }
 type PhotoDraft = { kind: 'saved'; path: string } | { kind: 'new'; photo: PreparedPhoto } | null
 
-const newIngredient = (): IngredientDraft => ({
+const newIngredient = (name = ''): IngredientDraft => ({
   key: crypto.randomUUID(),
   quantity: '',
   unit: '',
-  name: '',
+  name,
   note: '',
   section: null,
 })
-const newStep = (): StepDraft => ({ key: crypto.randomUUID(), text: '' })
+const newStep = (text = ''): StepDraft => ({ key: crypto.randomUUID(), text })
 
 const quantityText = (quantity: number | null) =>
   quantity === null ? '' : String(Math.round(quantity * 1000) / 1000).replace('.', ',')
@@ -79,10 +80,12 @@ function EditRecipe({ id }: { id: string }) {
 function RecipeForm({ recipe }: { recipe?: Recipe }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [title, setTitle] = useState(recipe?.title ?? '')
-  const [servings, setServings] = useState(recipe?.servings ?? 4)
-  const [prep, setPrep] = useState(recipe?.prepMinutes?.toString() ?? '')
-  const [cook, setCook] = useState(recipe?.cookMinutes?.toString() ?? '')
+  const draft = recipe ? undefined : (location.state as { draft?: RecipeDraft } | null)?.draft
+  const sourceUrl = recipe?.sourceUrl ?? draft?.sourceUrl ?? null
+  const [title, setTitle] = useState(recipe?.title ?? draft?.title ?? '')
+  const [servings, setServings] = useState(recipe?.servings ?? draft?.servings ?? 4)
+  const [prep, setPrep] = useState((recipe ?? draft)?.prepMinutes?.toString() ?? '')
+  const [cook, setCook] = useState((recipe ?? draft)?.cookMinutes?.toString() ?? '')
   const [tags, setTags] = useState<string[]>(recipe?.tags ?? [])
   const [notes, setNotes] = useState(recipe?.notes ?? '')
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(() =>
@@ -96,10 +99,16 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
           note: i.note ?? '',
           section: i.section,
         }))
-      : [newIngredient(), newIngredient(), newIngredient()],
+      : draft?.ingredients.length
+        ? draft.ingredients.map((line) => newIngredient(line))
+        : [newIngredient(), newIngredient(), newIngredient()],
   )
   const [steps, setSteps] = useState<StepDraft[]>(() =>
-    recipe?.steps.length ? recipe.steps.map((s) => ({ key: s.id, id: s.id, text: s.text })) : [newStep(), newStep()],
+    recipe?.steps.length
+      ? recipe.steps.map((s) => ({ key: s.id, id: s.id, text: s.text }))
+      : draft?.steps.length
+        ? draft.steps.map((text) => newStep(text))
+        : [newStep(), newStep()],
   )
   const [photo, setPhoto] = useState<PhotoDraft>(recipe?.imagePath ? { kind: 'saved', path: recipe.imagePath } : null)
   const [readingPhoto, setReadingPhoto] = useState(false)
@@ -118,7 +127,8 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
 
   const photoSrc = photo?.kind === 'new' ? photo.photo.preview : photo ? photoUrl(photo.path, 'small') : null
   const snapshot = JSON.stringify([title, servings, prep, cook, tags, notes, ingredients, steps, photo])
-  const initialSnapshot = useRef(snapshot)
+  // An imported draft counts as unsaved work from the start.
+  const initialSnapshot = useRef(draft ? '' : snapshot)
   const dirty = snapshot !== initialSnapshot.current
 
   // Opened directly (e.g. after a reload) there is no history entry to go back to.
@@ -178,6 +188,7 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
       tags,
       imagePath: photo?.kind === 'saved' ? photo.path : null,
       notes: notes.trim() || null,
+      sourceUrl,
       ingredients: parsed.map((i) => ({
         id: i.id,
         quantity: i.amount ?? null,
@@ -232,6 +243,12 @@ function RecipeForm({ recipe }: { recipe?: Recipe }) {
         </button>
 
         <h1 className="page-title">{recipe ? 'Endre oppskrift' : 'Ny oppskrift'}</h1>
+        {draft && (
+          <p className="editor-hint">
+            Hentet fra {siteName(draft.sourceUrl)}. Mengdene står foreløpig i ingrediensnavnet og blir ikke skalert før
+            du flytter dem til Mengde og Enhet.
+          </p>
+        )}
         {error && (
           <p className="error" role="alert">
             {error}
