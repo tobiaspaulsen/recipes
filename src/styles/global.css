@@ -709,6 +709,13 @@ body {
   border-radius: 999px;
 }
 
+/* With the keyboard up iOS can pan the tab bar into view above it, where the add bar would sit on top of it. */
+@media (pointer: coarse) {
+  body:has(.add-bar input:focus) .tabbar {
+    visibility: hidden;
+  }
+}
+
 .tabbar a {
   flex: 1;
   min-height: 52px;

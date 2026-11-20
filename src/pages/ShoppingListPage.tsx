@@ -20,7 +20,6 @@ export function ShoppingListPage() {
   const listRef = useRef<HTMLDivElement>(null)
   const openListRef = useRef<HTMLUListElement>(null)
   const addBarRef = useRef<HTMLFormElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const revealAfterAdd = useRef(false)
   const doneRef = useRef<HTMLElement>(null)
   const clearing = useRef(false)
@@ -34,14 +33,16 @@ export function ShoppingListPage() {
   useFlip(listRef, settled.current)
 
   // iOS scrolls to the page bottom when the add field gets focus; keep the newest items just above the bar instead.
-  function revealListEnd(behavior: ScrollBehavior) {
+  function revealListEnd(behavior: ScrollBehavior, onlyDown = false) {
     const list = openListRef.current
     const bar = addBarRef.current
     if (!list?.childElementCount || !bar) return
-    window.scrollBy({ top: list.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + 16, behavior })
+    const delta = list.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + 16
+    if (onlyDown && delta <= 0) return
+    window.scrollBy({ top: delta, behavior })
   }
 
-  const keyboardOpen = addFocused && keyboardInset > 0
+  const keyboardOpen = addFocused && keyboardInset !== null
   useEffect(() => {
     if (keyboardOpen) revealListEnd('auto')
   }, [keyboardOpen])
@@ -49,7 +50,7 @@ export function ShoppingListPage() {
   useEffect(() => {
     if (!revealAfterAdd.current) return
     revealAfterAdd.current = false
-    revealListEnd('smooth')
+    revealListEnd('smooth', true)
   })
 
   useEffect(() => {
@@ -90,7 +91,6 @@ export function ShoppingListPage() {
     add([name])
     setDraft('')
     revealAfterAdd.current = true
-    inputRef.current?.focus()
   }
 
   function submit(event: FormEvent) {
@@ -183,13 +183,12 @@ export function ShoppingListPage() {
         ref={addBarRef}
         className="add-bar glass"
         onSubmit={submit}
-        style={addFocused && keyboardInset > 0 ? { bottom: keyboardInset + 8 } : undefined}
+        style={keyboardOpen ? { bottom: keyboardInset + 8 } : undefined}
       >
         <label htmlFor="new-item" className="sr-only">
           Ny vare
         </label>
         <input
-          ref={inputRef}
           id="new-item"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
