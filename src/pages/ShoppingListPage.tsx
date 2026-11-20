@@ -18,9 +18,6 @@ export function ShoppingListPage() {
   const { pull, refreshing } = usePullToRefresh(refresh)
   const { recipes } = useRecipes()
   const listRef = useRef<HTMLDivElement>(null)
-  const openListRef = useRef<HTMLUListElement>(null)
-  const addBarRef = useRef<HTMLFormElement>(null)
-  const revealAfterAdd = useRef(false)
   const doneRef = useRef<HTMLElement>(null)
   const clearing = useRef(false)
   // Stays false through the first loaded render, so the initial list doesn't animate in.
@@ -31,27 +28,6 @@ export function ShoppingListPage() {
   }, [loading])
 
   useFlip(listRef, settled.current)
-
-  // iOS scrolls to the page bottom when the add field gets focus; keep the newest items just above the bar instead.
-  function revealListEnd(behavior: ScrollBehavior, onlyDown = false) {
-    const list = openListRef.current
-    const bar = addBarRef.current
-    if (!list?.childElementCount || !bar) return
-    const delta = list.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + 16
-    if (onlyDown && delta <= 0) return
-    window.scrollBy({ top: delta, behavior })
-  }
-
-  const keyboardOpen = addFocused && keyboardInset !== null
-  useEffect(() => {
-    if (keyboardOpen) revealListEnd('auto')
-  }, [keyboardOpen])
-
-  useEffect(() => {
-    if (!revealAfterAdd.current) return
-    revealAfterAdd.current = false
-    revealListEnd('smooth', true)
-  })
 
   useEffect(() => {
     if (!undo) return
@@ -90,7 +66,6 @@ export function ShoppingListPage() {
     if (!name) return
     add([name])
     setDraft('')
-    revealAfterAdd.current = true
   }
 
   function submit(event: FormEvent) {
@@ -146,7 +121,7 @@ export function ShoppingListPage() {
       )}
 
       <div ref={listRef}>
-        <ul className="items" ref={openListRef}>
+        <ul className="items">
           {open.map((item) => (
             <ItemRow key={item.id} item={item} {...rowProps} />
           ))}
@@ -180,10 +155,9 @@ export function ShoppingListPage() {
 
       <div className="add-bar-space" />
       <form
-        ref={addBarRef}
         className="add-bar glass"
         onSubmit={submit}
-        style={keyboardOpen ? { bottom: keyboardInset + 8 } : undefined}
+        style={addFocused && keyboardInset > 0 ? { bottom: keyboardInset + 8 } : undefined}
       >
         <label htmlFor="new-item" className="sr-only">
           Ny vare
