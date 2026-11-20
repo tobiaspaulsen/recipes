@@ -18,6 +18,10 @@ export function ShoppingListPage() {
   const { pull, refreshing } = usePullToRefresh(refresh)
   const { recipes } = useRecipes()
   const listRef = useRef<HTMLDivElement>(null)
+  const openListRef = useRef<HTMLUListElement>(null)
+  const addBarRef = useRef<HTMLFormElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const revealAfterAdd = useRef(false)
   const doneRef = useRef<HTMLElement>(null)
   const clearing = useRef(false)
   // Stays false through the first loaded render, so the initial list doesn't animate in.
@@ -28,6 +32,25 @@ export function ShoppingListPage() {
   }, [loading])
 
   useFlip(listRef, settled.current)
+
+  // iOS scrolls to the page bottom when the add field gets focus; keep the newest items just above the bar instead.
+  function revealListEnd(behavior: ScrollBehavior) {
+    const list = openListRef.current
+    const bar = addBarRef.current
+    if (!list?.childElementCount || !bar) return
+    window.scrollBy({ top: list.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + 16, behavior })
+  }
+
+  const keyboardOpen = addFocused && keyboardInset > 0
+  useEffect(() => {
+    if (keyboardOpen) revealListEnd('auto')
+  }, [keyboardOpen])
+
+  useEffect(() => {
+    if (!revealAfterAdd.current) return
+    revealAfterAdd.current = false
+    revealListEnd('smooth')
+  })
 
   useEffect(() => {
     if (!undo) return
@@ -61,12 +84,25 @@ export function ShoppingListPage() {
     .filter((item) => item.checked)
     .sort((a, b) => (b.checkedAt ?? 0) - (a.checkedAt ?? 0))
 
-  function submit(event: FormEvent) {
-    event.preventDefault()
+  function addDraft() {
     const name = draft.trim()
     if (!name) return
     add([name])
     setDraft('')
+    revealAfterAdd.current = true
+    inputRef.current?.focus()
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault()
+    addDraft()
+  }
+
+  // Handled here rather than as a form submit, which makes iOS dismiss the keyboard.
+  function onAddKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return
+    event.preventDefault()
+    addDraft()
   }
 
   const recipeTitles = new Map(recipes?.map((recipe) => [recipe.id, recipe.title]))
@@ -110,7 +146,7 @@ export function ShoppingListPage() {
       )}
 
       <div ref={listRef}>
-        <ul className="items">
+        <ul className="items" ref={openListRef}>
           {open.map((item) => (
             <ItemRow key={item.id} item={item} {...rowProps} />
           ))}
@@ -144,6 +180,7 @@ export function ShoppingListPage() {
 
       <div className="add-bar-space" />
       <form
+        ref={addBarRef}
         className="add-bar glass"
         onSubmit={submit}
         style={addFocused && keyboardInset > 0 ? { bottom: keyboardInset + 8 } : undefined}
@@ -152,16 +189,24 @@ export function ShoppingListPage() {
           Ny vare
         </label>
         <input
+          ref={inputRef}
           id="new-item"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onFocus={() => setAddFocused(true)}
           onBlur={() => setAddFocused(false)}
+          onKeyDown={onAddKeyDown}
           placeholder="Legg til vare"
           autoComplete="off"
           enterKeyHint="enter"
         />
-        <button type="submit" aria-label="Legg til" disabled={!draft.trim()}>
+        <button
+          type="submit"
+          aria-label="Legg til"
+          disabled={!draft.trim()}
+          // Tapping a button blurs the input on iOS, which closes the keyboard.
+          onPointerDown={(event) => event.preventDefault()}
+        >
           <Plus size={20} strokeWidth={2.25} aria-hidden />
         </button>
       </form>
